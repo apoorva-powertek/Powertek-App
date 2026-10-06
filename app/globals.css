@@ -157,7 +157,7 @@
 .workspace-login{display:flex;justify-content:center;align-items:center;gap:12px;text-decoration:none;color:#416a7e;font-size:10px;font-weight:700;margin:20px auto 0}
 .marketing-contact{position:relative;overflow:hidden;background:#102b3a;color:#ecf2f4;padding:65px max(calc((100% - 1050px)/2),7vw);display:flex;align-items:center;justify-content:space-between;gap:30px}
 .marketing-contact .marketing-eyebrow{color:#94b4c1}.marketing-contact h2{color:#f0f4f5}.marketing-contact h2 em{color:#f19155}
-.marketing-contact>div:first-child>p:last-child{max-width:490px;color:#a5bac4;font-size:10px;line-height:1.8;margin:13px 0 0}
+.marketing-contact>div:first-child>p{max-width:490px;color:#a5bac4;font-size:10px;line-height:1.8;margin:13px 0 0}
 .marketing-contact>a{position:relative;z-index:1;display:flex;align-items:center;gap:20px;background:#ef8a4c;color:#10212b;text-decoration:none;padding:14px 17px;font-size:10px;font-weight:700;white-space:nowrap}
 .contact-grid{position:absolute;inset:0;opacity:.07;background-image:linear-gradient(#8bb3c7 1px,transparent 1px),linear-gradient(90deg,#8bb3c7 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(90deg,transparent,black)}
 .marketing-footer{min-height:84px;background:#091a25;display:grid;grid-template-columns:1fr 1.3fr 1.5fr 1fr;align-items:center;gap:15px;padding:18px clamp(22px,5vw,76px);color:#d3dfe2}
@@ -203,3 +203,5 @@
 .workspace-window-foot{font-size:5px;padding:0 7px}
 .marketing-footer>span{font-size:6px}.marketing-footer>div{gap:14px}.marketing-footer>div a{font-size:7px}
 }
+
+.marketing-contact-details{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:12px 26px;margin-top:17px}.marketing-contact-details a,.marketing-contact-details span{display:grid;gap:4px;color:#eff4f5;text-decoration:none;font-size:10px}.marketing-contact-details small{font:700 7px ui-monospace,monospace;letter-spacing:.11em;color:#94b4c1}.marketing-contact-details b{font-size:9px;line-height:1.6;font-weight:600}.marketing-contact-details a:hover b{color:#f19155}@media(max-width:700px){.marketing-contact-details{gap:13px 20px}.marketing-contact-details span{flex-basis:100%}}
