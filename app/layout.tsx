@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Powertek Pole Portal",
-  description: "Secure pole survey imagery, attachment heights, satellite locations, and SPIDA-style profiles.",
+  title: "Powertek | Pole Survey & Client Portal",
+  description: "Pole survey data, measured photo overlays, mapped locations, and project deliverables in a secure Powertek client workspace.",
   other: {
     "codex-preview": "development",
   },
