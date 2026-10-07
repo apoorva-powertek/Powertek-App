@@ -1,8 +1,10 @@
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 import type { PortalUser } from "@/lib/portal-types";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+// These are public browser credentials. RLS and confirmed Supabase Auth sessions
+// enforce access; never replace the publishable key with a service-role secret.
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://goqvlgiqqrglyjgpktav.supabase.co";
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_gjaMRAc0d3YhjSD0ox_IfA_Fcztp7We";
 
 export function createBrowserSupabase(): SupabaseClient {
   if (!supabaseUrl || !supabaseKey) throw new Error("Supabase is not configured. Add the Supabase URL and publishable key to the Vercel project.");
