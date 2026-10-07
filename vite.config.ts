@@ -1,7 +1,7 @@
 import vinext from "vinext";
 import { defineConfig } from "vite";
 import { nitro } from "nitro/vite";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 import hostingConfig from "./.openai/hosting.json";
 import { readExecutionProfile } from "./scripts/execution-profile.mjs";
 import { sites } from "./build/sites-vite-plugin";
@@ -56,7 +56,7 @@ export default defineConfig(async () => {
       },
       resolve: {
         alias: {
-          "cloudflare:workers": fileURLToPath(new URL("./lib/vercel-cloudflare-env.ts", import.meta.url)),
+          "cloudflare:workers": resolve(process.cwd(), "lib/vercel-cloudflare-env.ts"),
         },
       },
       plugins: [vinext(), sites({ mockAuth: false }), nitro()],
