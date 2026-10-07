@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { ProjectRow } from "@/components/portal-app";
 import type { ImportAttachment, ImportPole } from "@/lib/portal-types";
+import { authenticatedFetch } from "@/lib/supabase";
 import { Check, CloudUpload, FileArchive, FileJson2, FileSpreadsheet, Image as ImageIcon, LoaderCircle, ShieldCheck } from "lucide-react";
 
 type JsonMeasurement = Partial<ImportPole> & { matchKey: string; rawJson: unknown };
@@ -176,7 +177,7 @@ async function uploadEntry(projectId: string, kind: "image" | "json" | "spreadsh
   const params = new URLSearchParams({ kind, filename: name });
   if (poleName) params.set("poleName", poleName);
   const payload = body instanceof Uint8Array ? new Blob([body.buffer as ArrayBuffer], { type: mimeFromName(name) }) : body;
-  const response = await fetch(`/api/projects/${encodeURIComponent(projectId)}/files?${params}`, { method: "PUT", headers: { "content-type": payload.type || mimeFromName(name) }, body: payload });
+  const response = await authenticatedFetch(`/api/projects/${encodeURIComponent(projectId)}/files?${params}`, { method: "PUT", headers: { "content-type": payload.type || mimeFromName(name) }, body: payload });
   const result = await response.json().catch(() => ({})) as { error?: string };
   if (!response.ok) throw new Error(result.error || `Could not upload ${name}`);
 }
@@ -213,7 +214,7 @@ export function ImportDialog({ projects, onComplete }: { projects: ProjectRow[];
         if (measurement) Object.assign(pole, measurement, { poleName: pole.poleName });
       }
       setProgress(22); setPhase(`Saving ${poles.length} pole records`);
-      const metadataResponse = await fetch(`/api/projects/${encodeURIComponent(projectId)}/import`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ poles, sourceName: spreadsheet.name }) });
+      const metadataResponse = await authenticatedFetch(`/api/projects/${encodeURIComponent(projectId)}/import`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ poles, sourceName: spreadsheet.name }) });
       const metadata = await metadataResponse.json().catch(() => ({})) as { error?: string; importedAttachments?: number };
       if (!metadataResponse.ok) throw new Error(metadata.error || "Could not save pole records");
       setProgress(30); setPhase("Saving original source files");
@@ -259,3 +260,4 @@ export function ImportDialog({ projects, onComplete }: { projects: ProjectRow[];
 function UploadField({ number, icon, title, detail, accept, multiple, onFiles, filenames }: { number: string; icon: React.ReactNode; title: string; detail: string; accept: string; multiple?: boolean; onFiles: (files: File[]) => void; filenames: string[] }) {
   return <label className={`upload-field ${filenames.length ? "has-file" : ""}`}><input type="file" accept={accept} multiple={multiple} onChange={(event) => onFiles(Array.from(event.target.files ?? []))} /><span className="upload-number">{number}</span><span className="upload-icon">{filenames.length ? <Check /> : icon}</span><span className="upload-copy"><strong>{title}</strong><small>{filenames.length ? `${filenames.length} selected • ${filenames.slice(0, 2).join(", ")}${filenames.length > 2 ? "…" : ""}` : detail}</small></span><span className="browse-pill">Browse</span></label>;
 }
+

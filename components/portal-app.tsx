@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { PortalUser } from "@/lib/portal-types";
+import { authenticatedFetch, createBrowserSupabase } from "@/lib/supabase";
 import { ImportDialog } from "@/components/import-dialog";
 import {
   Building2, ChevronRight, CircleUserRound, CloudUpload, Download, FolderKanban,
@@ -20,17 +21,17 @@ type Dashboard = { user: PortalUser; clients: ClientRow[]; projects: ProjectRow[
 const emptyDashboard: Dashboard = { user: {} as PortalUser, clients: [], projects: [], users: [] };
 
 function Brand() {
-  return <div className="brand-lockup"><span className="brand-mark" aria-hidden="true"><span /></span><span><strong>POWERTEK</strong><small>POLE INTELLIGENCE</small></span></div>;
+  return <div className="portal-brand"><img src="/powertek-logo.svg" alt="Powertek Utility Services" /></div>;
 }
 
 async function jsonRequest<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, { ...init, headers: { "content-type": "application/json", ...(init?.headers ?? {}) } });
+  const response = await authenticatedFetch(url, { ...init, headers: { "content-type": "application/json", ...(init?.headers ?? {}) } });
   const data = await response.json().catch(() => ({})) as { error?: string };
   if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
   return data as T;
 }
 
-export function PortalApp({ initialUser, signOutPath }: { initialUser: PortalUser; signOutPath: string }) {
+export function PortalApp({ initialUser, signOutPath, onSignOut }: { initialUser: PortalUser; signOutPath: string; onSignOut?: () => void }) {
   const [data, setData] = useState<Dashboard>({ ...emptyDashboard, user: initialUser });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -131,7 +132,7 @@ export function PortalApp({ initialUser, signOutPath }: { initialUser: PortalUse
         <div className="portal-header-right">
           <span className="role-pill"><ShieldCheck size={13} /> {isAdmin ? "Administrator" : "Client access"}</span>
           <span className="account-name"><CircleUserRound size={17} /><span><strong>{data.user.displayName}</strong><small>{data.user.email}</small></span></span>
-          <a className="icon-button" href={signOutPath} target="_top" aria-label="Sign out"><LogOut size={17} /></a>
+          {onSignOut ? <button className="icon-button" onClick={onSignOut} aria-label="Sign out"><LogOut size={17} /></button> : <a className="icon-button" href={signOutPath} aria-label="Sign out"><LogOut size={17} /></a>}
         </div>
       </header>
       <div className="portal-layout">
@@ -174,3 +175,4 @@ export function PortalApp({ initialUser, signOutPath }: { initialUser: PortalUse
     </main>
   );
 }
+

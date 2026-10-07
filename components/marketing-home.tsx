@@ -1,7 +1,7 @@
 import { Activity, ArrowDownToLine, ArrowRight, ArrowUpRight, Building2, Camera, Check, Compass, FileArchive, FileImage, FileText, LockKeyhole, MapPinned, Ruler, ShieldCheck } from "lucide-react";
 
 function Brand() {
-  return <span className="brand-lockup marketing-brand"><span className="brand-mark" aria-hidden="true"><span /></span><span><strong>POWERTEK</strong><small>UTILITY SERVICES</small></span></span>;
+  return <span className="marketing-brand"><img src="/powertek-logo.svg" alt="Powertek Utility Services" /></span>;
 }
 
 function SurveyPreview() {
@@ -45,3 +45,4 @@ export function MarketingHome({ portalSignInUrl }: { portalSignInUrl: string }) 
     <footer className="marketing-footer"><a href="#top" aria-label="Powertek home"><Brand /></a><span>TRANSMISSION ENGINEERING · AERIAL INSPECTION · PROJECT DELIVERY</span><div><a href="#services">Services</a><a href="#workflow">How it works</a><a href={portalSignInUrl} target="_top">Client sign in</a></div><small>© {new Date().getFullYear()} Powertek</small></footer>
   </main>;
 }
+
