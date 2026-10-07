@@ -1,4 +1,4 @@
-@import "tailwindcss/index.css";
+@import "tailwindcss";
 @import "tw-animate-css";
 @import "../vendor/shadcn-tailwind-4.13.0.css";
 
@@ -205,3 +205,20 @@
 }
 
 .marketing-contact-details{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:12px 26px;margin-top:17px}.marketing-contact-details a,.marketing-contact-details span{display:grid;gap:4px;color:#eff4f5;text-decoration:none;font-size:10px}.marketing-contact-details small{font:700 7px ui-monospace,monospace;letter-spacing:.11em;color:#94b4c1}.marketing-contact-details b{font-size:9px;line-height:1.6;font-weight:600}.marketing-contact-details a:hover b{color:#f19155}@media(max-width:700px){.marketing-contact-details{gap:13px 20px}.marketing-contact-details span{flex-basis:100%}}
+.portal-login-form{display:grid;gap:12px;max-width:440px;margin-top:25px}.portal-login-form label{display:flex;align-items:center;gap:10px;min-height:50px;padding:0 14px;border:1px solid rgba(140,174,196,.26);border-radius:9px;background:rgba(7,23,36,.78);color:#8ca7ba}.portal-login-form label:focus-within{border-color:#ef8648;box-shadow:0 0 0 3px rgba(239,134,72,.12)}.portal-login-form input{width:100%;border:0;outline:0;background:transparent;color:#f3f7fa;font:inherit;font-size:14px;font-weight:500}.portal-login-form input::placeholder{color:#7790a2}.portal-login-form .primary-cta{width:100%;justify-content:center;border:0;cursor:pointer}.portal-login-form .primary-cta:disabled{opacity:.65;cursor:wait}.login-mode-links{display:flex;gap:18px;margin-top:13px}.login-mode-links button{padding:0;border:0;background:none;color:#9bb5c7;font-size:12px;text-decoration:underline;cursor:pointer}.login-feedback{max-width:440px;margin:0;color:#9fe0c9;font-size:12px;line-height:1.5}.login-feedback.error{color:#ffad9a}
+:root{--ink:#0c2170;--orange:#ff8d2a;--orange-2:#ffad5e}
+.powertek-site{width:100%;max-width:none;margin:0;background:#fff}
+.marketing-header,.marketing-hero,.marketing-ribbon{width:100%;max-width:none}
+.marketing-header{padding-inline:clamp(24px,5.5vw,96px)}
+.marketing-header nav{gap:clamp(22px,3vw,48px)}
+.marketing-hero{min-height:min(760px,calc(100svh - 110px));padding:clamp(56px,7vh,90px) clamp(30px,6vw,112px) 76px;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(24px,4vw,72px)}
+.marketing-hero-copy{max-width:610px}
+.marketing-services,.marketing-workspace,.marketing-contact{width:min(100% - 48px,1360px);max-width:1360px;margin-inline:auto}
+.marketing-process{width:100%;}
+.marketing-brand img{display:block;width:174px;height:auto}
+.portal-brand{display:flex;align-items:center;min-width:0}.portal-brand img{display:block;width:174px;height:auto}.portal-brand.compact img{width:152px}
+.marketing-login,.marketing-primary,.orange-button{border-color:#ff8d2a}
+@media(max-width:900px){.marketing-hero{min-height:auto;grid-template-columns:minmax(0,1fr);padding:56px 28px 72px}.marketing-hero-copy{max-width:720px}.marketing-hero-art{width:min(100%,760px);margin-inline:auto}.marketing-header{padding-inline:24px}.marketing-services,.marketing-workspace,.marketing-contact{width:100%;}}
+@media(max-width:600px){.marketing-brand img{width:148px}.portal-brand img{width:148px}.portal-brand.compact img{width:132px}.marketing-hero{padding-inline:20px}.marketing-hero h1{font-size:clamp(40px,12vw,54px)}}
+
+

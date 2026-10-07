@@ -1,27 +1,18 @@
-import { objectBucket, rawDb } from "@/db/raw";
-import { authErrorResponse, requireProjectAccess, safeFilename } from "@/lib/portal-auth";
+import { authErrorResponse, requirePortalUser } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 type Context = { params: Promise<{ projectId: string; poleId: string }> };
 
-export async function GET(_request: Request, context: Context) {
+export async function GET(request: Request, context: Context) {
   try {
+    const { client } = await requirePortalUser(request);
     const { projectId, poleId } = await context.params;
-    await requireProjectAccess(projectId);
-    const row = await rawDb().prepare(`
-      SELECT image_key, image_filename FROM poles WHERE id = ? AND project_id = ?
-    `).bind(poleId, projectId).first<{ image_key: string | null; image_filename: string | null }>();
-    if (!row?.image_key) return Response.json({ error: "Original pole image is not available" }, { status: 404 });
-    const object = await objectBucket().get(row.image_key);
-    if (!object) return Response.json({ error: "Original pole image is missing from storage" }, { status: 404 });
-    const headers = new Headers();
-    object.writeHttpMetadata(headers);
-    headers.set("etag", object.httpEtag);
-    headers.set("cache-control", "private, max-age=3600");
-    headers.set("content-disposition", `inline; filename="${safeFilename(row.image_filename ?? "pole-photo.jpg")}"`);
-    headers.set("x-content-type-options", "nosniff");
-    return new Response(object.body, { headers });
-  } catch (error) {
-    return authErrorResponse(error);
-  }
+    const result = await client.from("poles").select("image_key,image_filename").eq("id", poleId).eq("project_id", projectId).maybeSingle();
+    if (result.error) throw result.error;
+    if (!result.data?.image_key) return Response.json({ error: "Original pole photo has not been migrated to Supabase Storage" }, { status: 404 });
+    const signed = await client.storage.from("project-files").createSignedUrl(result.data.image_key, 90);
+    if (signed.error || !signed.data?.signedUrl) return Response.json({ error: "Original pole photo is unavailable in secure storage" }, { status: 404 });
+    return Response.redirect(signed.data.signedUrl, 302);
+  } catch (error) { return authErrorResponse(error); }
 }
+

@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { AttachmentRecord, PoleRecord, PortalUser } from "@/lib/portal-types";
+import { authenticatedFetch } from "@/lib/supabase";
 import {
   ArrowLeft, CircleUserRound, Crosshair, Download, ExternalLink,
   FileArchive, Focus, Image as ImageIcon, Layers3, ListFilter, LoaderCircle, LocateFixed,
@@ -14,7 +15,7 @@ type ProjectInfo = { id: string; name: string; code: string; description: string
 type ProjectPayload = { project: ProjectInfo; poles: PoleRecord[] };
 type ViewName = "map" | "split" | "photo" | "profile";
 
-function Brand() { return <div className="brand-lockup compact"><span className="brand-mark" aria-hidden="true"><span /></span><span><strong>POWERTEK</strong><small>POLE INTELLIGENCE</small></span></div>; }
+function Brand() { return <div className="portal-brand compact"><img src="/powertek-logo.svg" alt="Powertek Utility Services" /></div>; }
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 const meters = (value: number | null | undefined, digits = 2) => value == null ? "—" : `${Number(value).toFixed(digits)} m`;
 const safeName = (value: string) => value.replace(/[^a-z0-9_-]+/gi, "_").replace(/^_+|_+$/g, "") || "pole";
@@ -32,7 +33,7 @@ function attachmentStyle(name: string) {
 }
 
 async function fetchProject(projectId: string): Promise<ProjectPayload> {
-  const response = await fetch(`/api/projects/${encodeURIComponent(projectId)}/poles`);
+  const response = await authenticatedFetch(`/api/projects/${encodeURIComponent(projectId)}/poles`);
   const data = await response.json().catch(() => ({})) as Partial<ProjectPayload> & { error?: string };
   if (!response.ok) throw new Error(data.error || "Could not load project");
   return data as ProjectPayload;
@@ -57,7 +58,7 @@ function reportHtml(project: ProjectInfo, pole: PoleRecord) {
   return `<!doctype html><html><head><meta charset="utf-8"><title>${pole.poleName} report</title><style>body{font:14px Arial;color:#15212c;margin:40px}header{border-bottom:4px solid #f47d35;padding-bottom:14px}h1{margin:8px 0}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0}.meta div{border:1px solid #ccd5db;padding:12px}.meta small{display:block;color:#647583;margin-bottom:5px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #c8d1d8;padding:9px;text-align:left}th{background:#edf2f5}footer{margin-top:30px;color:#6c7d89;font-size:11px}@media print{body{margin:18mm}}</style></head><body><header><b>POWERTEK • POLE INTELLIGENCE</b><h1>${pole.poleName}</h1><span>${project.client_name} / ${project.name}</span></header><section class="meta"><div><small>LATITUDE</small><b>${pole.latitude}</b></div><div><small>LONGITUDE</small><b>${pole.longitude}</b></div><div><small>GROUND ELEVATION</small><b>${pole.elevationM.toFixed(2)} m</b></div><div><small>POLE TOP</small><b>${meters(pole.topHeightM)}</b></div><div><small>POLE HEIGHT</small><b>${pole.poleHeightFt ?? "—"} ft</b></div><div><small>POLE CLASS</small><b>${pole.poleClass ?? "—"}</b></div></section><h2>Attachment schedule</h2><table><thead><tr><th>Attachment</th><th>Height above ground</th><th>Photo side</th></tr></thead><tbody>${rows || `<tr><td colspan="3">No measured attachments</td></tr>`}</tbody></table><footer>Generated from Powertek Pole Portal • ${new Date().toISOString()}</footer></body></html>`;
 }
 
-export function ProjectViewer({ projectId, user, signOutPath }: { projectId: string; user: PortalUser; signOutPath: string }) {
+export function ProjectViewer({ projectId, user, signOutPath, onSignOut }: { projectId: string; user: PortalUser; signOutPath: string; onSignOut?: () => void }) {
   const [data, setData] = useState<ProjectPayload | null>(null);
   const [selectedId, setSelectedId] = useState<string>("");
   const [view, setView] = useState<ViewName>("map");
@@ -108,7 +109,7 @@ export function ProjectViewer({ projectId, user, signOutPath }: { projectId: str
         [`${safeName(pole.poleName)}_report.html`]: strToU8(reportHtml(data.project, pole)),
       };
       if (pole.imageFilename) {
-        const response = await fetch(`/api/projects/${projectId}/poles/${pole.id}/image`);
+        const response = await authenticatedFetch(`/api/projects/${projectId}/poles/${pole.id}/image`);
         if (response.ok) files[`original_photo/${safeName(pole.imageFilename)}`] = new Uint8Array(await response.arrayBuffer());
       }
       downloadBlob(new Blob([zipSync(files, { level: 0 }).buffer as ArrayBuffer], { type: "application/zip" }), `${safeName(pole.poleName)}_pole_package.zip`);
@@ -129,7 +130,7 @@ export function ProjectViewer({ projectId, user, signOutPath }: { projectId: str
         setExporting(`Collecting original photo ${index + 1} of ${data.poles.length}`);
         files[`reports/${safeName(pole.poleName)}.html`] = strToU8(reportHtml(data.project, pole));
         if (!pole.imageFilename) continue;
-        const response = await fetch(`/api/projects/${projectId}/poles/${pole.id}/image`);
+        const response = await authenticatedFetch(`/api/projects/${projectId}/poles/${pole.id}/image`);
         if (response.ok) files[`original_photos/${safeName(pole.imageFilename)}`] = new Uint8Array(await response.arrayBuffer());
       }
       setExporting("Compressing project package");
@@ -140,7 +141,7 @@ export function ProjectViewer({ projectId, user, signOutPath }: { projectId: str
 
   if (!data) return <main className="viewer-loading"><LoaderCircle className="spin" /><p>{error || "Loading secure pole workspace…"}</p><Link href="/">Return to projects</Link></main>;
   return <main className="viewer-shell">
-    <header className="viewer-header"><Brand /><div className="viewer-project-title"><Link href="/"><ArrowLeft /> Projects</Link><span /><p><small>{data.project.client_name}</small><strong>{data.project.name}</strong></p></div><div className="viewer-actions"><button className="download-button" onClick={() => void downloadAll()} disabled={Boolean(exporting)}>{exporting ? <LoaderCircle className="spin" /> : <FileArchive />}<span>{exporting || "Download all poles"}</span></button><span className="viewer-account"><CircleUserRound /><span><strong>{user.displayName}</strong><small>{user.role}</small></span></span><a className="icon-button" href={signOutPath} target="_top"><LogOut /></a></div></header>
+    <header className="viewer-header"><Brand /><div className="viewer-project-title"><Link href="/"><ArrowLeft /> Projects</Link><span /><p><small>{data.project.client_name}</small><strong>{data.project.name}</strong></p></div><div className="viewer-actions"><button className="download-button" onClick={() => void downloadAll()} disabled={Boolean(exporting)}>{exporting ? <LoaderCircle className="spin" /> : <FileArchive />}<span>{exporting || "Download all poles"}</span></button><span className="viewer-account"><CircleUserRound /><span><strong>{user.displayName}</strong><small>{user.role}</small></span></span>{onSignOut ? <button className="icon-button" onClick={onSignOut} aria-label="Sign out"><LogOut /></button> : <a className="icon-button" href={signOutPath}><LogOut /></a>}</div></header>
     {error && <div className="viewer-error">{error}<button onClick={() => setError("")}>×</button></div>}
     <div className="viewer-layout">
       <aside className="pole-sidebar"><div className="pole-search"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search pole ID or attachment" /></div><div className="pole-filters"><button onClick={() => setFilter("all")} className={filter === "all" ? "active" : ""}>All</button><button onClick={() => setFilter("complete")} className={filter === "complete" ? "active" : ""}>Complete</button><button onClick={() => setFilter("location")} className={filter === "location" ? "active" : ""}>Location only</button></div><div className="pole-list scrollbar-thin">{visiblePoles.map((pole, index) => <button key={pole.id} className={pole.id === selected?.id ? "selected" : ""} onClick={() => selectPole(pole)}><span className="pole-index">{String(index + 1).padStart(2, "0")}</span><p><strong>{pole.poleName}</strong><small>{pole.attachments.length} attachments • top {meters(pole.topHeightM)}</small></p><i className={pole.status === "complete" ? "complete" : "location"} /></button>)}</div><footer><span>{visiblePoles.length} records shown</span><button><ListFilter /> Filter</button></footer></aside>
@@ -161,11 +162,13 @@ function projectImageUrl(projectId: string, pole: PoleRecord) { return `/api/pro
 
 function PhotoZoom({ pole, projectId, focusAttachment }: { pole: PoleRecord; projectId: string; focusAttachment: AttachmentRecord | null }) {
   const frame = useRef<HTMLDivElement>(null); const drag = useRef<{ x: number; y: number; px: number; py: number } | null>(null);
+  const [imageSrc, setImageSrc] = useState("");
   const [natural, setNatural] = useState({ width: pole.imageWidth || 3024, height: pole.imageHeight || 4032 });
   const [size, setSize] = useState({ width: 700, height: 650 }); const [scale, setScale] = useState(0.2); const [pan, setPan] = useState({ x: 0, y: 0 }); const [loaded, setLoaded] = useState(false);
   const fitScale = Math.min(size.width / natural.width, size.height / natural.height) * 0.94;
   const fit = useCallback(() => { setScale(fitScale); setPan({ x: (size.width - natural.width * fitScale) / 2, y: (size.height - natural.height * fitScale) / 2 }); }, [fitScale, natural.height, natural.width, size.height, size.width]);
   useEffect(() => { const node = frame.current; if (!node) return; const observer = new ResizeObserver(([entry]) => setSize({ width: entry.contentRect.width, height: entry.contentRect.height })); observer.observe(node); return () => observer.disconnect(); }, []);
+  useEffect(() => { let objectUrl = ""; let active = true; setLoaded(false); void authenticatedFetch(projectImageUrl(projectId, pole)).then(async (response) => { if (!response.ok) throw new Error("Photo is unavailable"); return response.blob(); }).then((blob) => { if (!active) return; objectUrl = URL.createObjectURL(blob); setImageSrc(objectUrl); }).catch(() => { if (active) setImageSrc(""); }); return () => { active = false; if (objectUrl) URL.revokeObjectURL(objectUrl); }; }, [pole.id, projectId]);
   useEffect(() => { setLoaded(false); setNatural({ width: pole.imageWidth || 3024, height: pole.imageHeight || 4032 }); }, [pole.id, pole.imageHeight, pole.imageWidth]);
   useEffect(() => { fit(); }, [fit]);
   useEffect(() => { if (!focusAttachment || focusAttachment.photoX == null || focusAttachment.photoY == null) return; const next = Math.max(fitScale * 2.6, 0.75); setScale(next); setPan({ x: size.width / 2 - focusAttachment.photoX * next, y: size.height / 2 - focusAttachment.photoY * next }); }, [focusAttachment, fitScale, size.height, size.width]);
@@ -173,7 +176,7 @@ function PhotoZoom({ pole, projectId, focusAttachment }: { pole: PoleRecord; pro
   if (!pole.imageFilename) return <div className="no-photo"><ImageIcon /><h3>No original image uploaded</h3><p>The location and pole information remain available. An administrator can add the matching full-quality photo from Upload data.</p></div>;
   return <div ref={frame} className="photo-zoom" onWheel={(event) => { event.preventDefault(); zoom(event.deltaY < 0 ? 1.18 : 0.85); }} onPointerDown={(event) => { if (event.button !== 0) return; drag.current = { x: event.clientX, y: event.clientY, px: pan.x, py: pan.y }; event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { if (!drag.current) return; setPan({ x: drag.current.px + event.clientX - drag.current.x, y: drag.current.py + event.clientY - drag.current.y }); }} onPointerUp={() => { drag.current = null; }}>
     {!loaded && <div className="image-loading"><LoaderCircle className="spin" /> Loading original pixels…</div>}
-    <div className="photo-stage" style={{ width: natural.width, height: natural.height, transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})` }}><img src={projectImageUrl(projectId, pole)} alt={`${pole.poleName} full-resolution measured pole`} draggable={false} onLoad={(event) => { const image = event.currentTarget; setNatural({ width: image.naturalWidth, height: image.naturalHeight }); setLoaded(true); }} /><PhotoOverlay pole={pole} /></div>
+    <div className="photo-stage" style={{ width: natural.width, height: natural.height, transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})` }}><img src={imageSrc || undefined} alt={`${pole.poleName} full-resolution measured pole`} draggable={false} onLoad={(event) => { const image = event.currentTarget; setNatural({ width: image.naturalWidth, height: image.naturalHeight }); setLoaded(true); }} /><PhotoOverlay pole={pole} /></div>
     <div className="zoom-toolbar"><button onClick={() => zoom(0.8)} aria-label="Zoom out"><Minus /></button><strong>{Math.round(scale * 100)}%</strong><button onClick={() => zoom(1.25)} aria-label="Zoom in"><Plus /></button><button onClick={() => { setScale(1); setPan({ x: size.width / 2 - natural.width / 2, y: size.height / 2 - natural.height / 2 }); }}>100%</button><button onClick={fit}><Focus /> Fit</button></div><span className="fullres-badge"><Maximize2 /> {natural.width} × {natural.height} original</span><span className="drag-hint">Scroll to zoom • drag to move</span>
   </div>;
 }
@@ -252,3 +255,4 @@ function SatelliteMap({ poles, selected, onSelect, onOpen, project }: { poles: P
     {selected && <div className="map-selected-card"><header><p><small>SELECTED POLE</small><strong>{selected.poleName}</strong></p><span>{selected.attachments.length} points</span></header>{selected.imageFilename ? <PhotoZoom pole={selected} projectId={selected.projectId} focusAttachment={null} /> : <div className="map-no-image"><ImageIcon /> No photo uploaded</div>}<div className="map-pole-data"><span><small>Latitude</small><strong>{selected.latitude}</strong></span><span><small>Longitude</small><strong>{selected.longitude}</strong></span><span><small>Ground elevation</small><strong>{meters(selected.elevationM)}</strong></span><span><small>Pole top</small><strong>{meters(selected.topHeightM)}</strong></span></div><div className="map-attachments"><p><span>ATTACHMENT HEIGHTS</span><b>{selected.attachments.length} ITEMS</b></p>{selected.attachments.slice(0, 8).map((item) => <button key={item.id} onClick={() => onOpen(selected)}><span><i style={{ background: attachmentStyle(item.name).color }} />{item.name}</span><strong>{item.heightM.toFixed(3)} m</strong></button>)}</div><div className="map-card-actions"><button onClick={() => onOpen(selected)}><SplitSquareVertical /> View photo + SPIDA</button><a target="_blank" rel="noreferrer" href={`https://www.google.com/maps/@?api=1&map_action=map&center=${selected.latitude},${selected.longitude}&zoom=20&basemap=satellite`}>Google satellite <ExternalLink /></a></div></div>}
   </div></section>;
 }
+
