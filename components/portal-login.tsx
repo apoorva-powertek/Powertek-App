@@ -6,6 +6,12 @@ import { createBrowserSupabase } from "@/lib/supabase";
 
 function Brand() { return <div className="portal-brand"><img src="/powertek-logo.svg" alt="Powertek Utility Services" /></div>; }
 
+export function PasswordUpdate() {
+  const [password, setPassword] = useState(""); const [confirm, setConfirm] = useState(""); const [error, setError] = useState(""); const [busy, setBusy] = useState(false);
+  async function submit(event: React.FormEvent) { event.preventDefault(); setError(""); if (password !== confirm) { setError("The passwords do not match."); return; } setBusy(true); try { const { error: updateError } = await createBrowserSupabase().auth.updateUser({ password }); if (updateError) throw updateError; window.history.replaceState({}, "", "/portal"); window.location.reload(); } catch (err) { setError(err instanceof Error ? err.message : "Could not update the password"); } finally { setBusy(false); } }
+  return <main className="access-shell"><Brand /><section className="access-card"><p className="eyebrow">PASSWORD RESET</p><h1>Choose a new password</h1><form className="portal-login-form" onSubmit={submit}><label><LockKeyhole size={16} /><input type="password" minLength={8} autoComplete="new-password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="New password" /></label><label><LockKeyhole size={16} /><input type="password" minLength={8} autoComplete="new-password" required value={confirm} onChange={(event) => setConfirm(event.target.value)} placeholder="Confirm password" /></label>{error && <p className="login-feedback error">{error}</p>}<button className="primary-cta" disabled={busy}>{busy ? "Saving…" : "Update password"}<ArrowRight size={17} /></button></form></section></main>;
+}
+
 export function PortalLogin() {
   const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
   const [email, setEmail] = useState("");
