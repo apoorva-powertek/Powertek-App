@@ -1,4 +1,5 @@
 import vinext from "vinext";
+import tailwindcss from "@tailwindcss/postcss";
 import { defineConfig } from "vite";
 import { nitro } from "nitro/vite";
 import { resolve } from "node:path";
@@ -51,6 +52,7 @@ export default defineConfig(async () => {
 
   if (process.env.VERCEL) {
     return {
+      css: { postcss: { plugins: [tailwindcss()] } },
       server: {
         port: Number(process.env.PORT ?? 3000),
       },
