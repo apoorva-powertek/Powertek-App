@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import type { AttachmentRecord, PoleRecord, PortalUser } from "@/lib/portal-types";
 import { authenticatedFetch } from "@/lib/supabase";
 import {
@@ -15,7 +16,7 @@ type ProjectInfo = { id: string; name: string; code: string; description: string
 type ProjectPayload = { project: ProjectInfo; poles: PoleRecord[] };
 type ViewName = "map" | "split" | "photo" | "profile";
 
-function Brand() { return <div className="portal-brand compact"><img src="/powertek-logo.svg" alt="Powertek Utility Services" /></div>; }
+function Brand() { return <div className="portal-brand compact"><Image src="/powertek-logo.svg" alt="Powertek Utility Services" width={362} height={108} priority /></div>; }
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 const meters = (value: number | null | undefined, digits = 2) => value == null ? "—" : `${Number(value).toFixed(digits)} m`;
 const safeName = (value: string) => value.replace(/[^a-z0-9_-]+/gi, "_").replace(/^_+|_+$/g, "") || "pole";
@@ -158,7 +159,7 @@ export function ProjectViewer({ projectId, user, signOutPath, onSignOut }: { pro
 
 function PanelHeader({ eyebrow, title, trailing }: { eyebrow: string; title: string; trailing: string }) { return <header className="panel-header"><p><small>{eyebrow}</small><strong>{title}</strong></p><span>{trailing}</span></header>; }
 
-function projectImageUrl(projectId: string, pole: PoleRecord) { return `/api/projects/${encodeURIComponent(projectId)}/poles/${encodeURIComponent(pole.id)}/image`; }
+function projectImageUrl(projectId: string, poleId: string) { return `/api/projects/${encodeURIComponent(projectId)}/poles/${encodeURIComponent(poleId)}/image`; }
 
 function PhotoZoom({ pole, projectId, focusAttachment }: { pole: PoleRecord; projectId: string; focusAttachment: AttachmentRecord | null }) {
   const frame = useRef<HTMLDivElement>(null); const drag = useRef<{ x: number; y: number; px: number; py: number } | null>(null);
@@ -168,7 +169,7 @@ function PhotoZoom({ pole, projectId, focusAttachment }: { pole: PoleRecord; pro
   const fitScale = Math.min(size.width / natural.width, size.height / natural.height) * 0.94;
   const fit = useCallback(() => { setScale(fitScale); setPan({ x: (size.width - natural.width * fitScale) / 2, y: (size.height - natural.height * fitScale) / 2 }); }, [fitScale, natural.height, natural.width, size.height, size.width]);
   useEffect(() => { const node = frame.current; if (!node) return; const observer = new ResizeObserver(([entry]) => setSize({ width: entry.contentRect.width, height: entry.contentRect.height })); observer.observe(node); return () => observer.disconnect(); }, []);
-  useEffect(() => { let objectUrl = ""; let active = true; setLoaded(false); void authenticatedFetch(projectImageUrl(projectId, pole)).then(async (response) => { if (!response.ok) throw new Error("Photo is unavailable"); return response.blob(); }).then((blob) => { if (!active) return; objectUrl = URL.createObjectURL(blob); setImageSrc(objectUrl); }).catch(() => { if (active) setImageSrc(""); }); return () => { active = false; if (objectUrl) URL.revokeObjectURL(objectUrl); }; }, [pole.id, projectId]);
+  useEffect(() => { let objectUrl = ""; let active = true; setLoaded(false); void authenticatedFetch(projectImageUrl(projectId, pole.id)).then(async (response) => { if (!response.ok) throw new Error("Photo is unavailable"); return response.blob(); }).then((blob) => { if (!active) return; objectUrl = URL.createObjectURL(blob); setImageSrc(objectUrl); }).catch(() => { if (active) setImageSrc(""); }); return () => { active = false; if (objectUrl) URL.revokeObjectURL(objectUrl); }; }, [pole.id, projectId]);
   useEffect(() => { setLoaded(false); setNatural({ width: pole.imageWidth || 3024, height: pole.imageHeight || 4032 }); }, [pole.id, pole.imageHeight, pole.imageWidth]);
   useEffect(() => { fit(); }, [fit]);
   useEffect(() => { if (!focusAttachment || focusAttachment.photoX == null || focusAttachment.photoY == null) return; const next = Math.max(fitScale * 2.6, 0.75); setScale(next); setPan({ x: size.width / 2 - focusAttachment.photoX * next, y: size.height / 2 - focusAttachment.photoY * next }); }, [focusAttachment, fitScale, size.height, size.width]);
@@ -176,7 +177,12 @@ function PhotoZoom({ pole, projectId, focusAttachment }: { pole: PoleRecord; pro
   if (!pole.imageFilename) return <div className="no-photo"><ImageIcon /><h3>No original image uploaded</h3><p>The location and pole information remain available. An administrator can add the matching full-quality photo from Upload data.</p></div>;
   return <div ref={frame} className="photo-zoom" onWheel={(event) => { event.preventDefault(); zoom(event.deltaY < 0 ? 1.18 : 0.85); }} onPointerDown={(event) => { if (event.button !== 0) return; drag.current = { x: event.clientX, y: event.clientY, px: pan.x, py: pan.y }; event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { if (!drag.current) return; setPan({ x: drag.current.px + event.clientX - drag.current.x, y: drag.current.py + event.clientY - drag.current.y }); }} onPointerUp={() => { drag.current = null; }}>
     {!loaded && <div className="image-loading"><LoaderCircle className="spin" /> Loading original pixels…</div>}
-    <div className="photo-stage" style={{ width: natural.width, height: natural.height, transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})` }}><img src={imageSrc || undefined} alt={`${pole.poleName} full-resolution measured pole`} draggable={false} onLoad={(event) => { const image = event.currentTarget; setNatural({ width: image.naturalWidth, height: image.naturalHeight }); setLoaded(true); }} /><PhotoOverlay pole={pole} /></div>
+    <div className="photo-stage" style={{ width: natural.width, height: natural.height, transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})` }}>
+      {/* Original object URLs must preserve their natural dimensions for calibrated overlays. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={imageSrc || undefined} alt={`${pole.poleName} full-resolution measured pole`} draggable={false} onLoad={(event) => { const image = event.currentTarget; setNatural({ width: image.naturalWidth, height: image.naturalHeight }); setLoaded(true); }} />
+      <PhotoOverlay pole={pole} />
+    </div>
     <div className="zoom-toolbar"><button onClick={() => zoom(0.8)} aria-label="Zoom out"><Minus /></button><strong>{Math.round(scale * 100)}%</strong><button onClick={() => zoom(1.25)} aria-label="Zoom in"><Plus /></button><button onClick={() => { setScale(1); setPan({ x: size.width / 2 - natural.width / 2, y: size.height / 2 - natural.height / 2 }); }}>100%</button><button onClick={fit}><Focus /> Fit</button></div><span className="fullres-badge"><Maximize2 /> {natural.width} × {natural.height} original</span><span className="drag-hint">Scroll to zoom • drag to move</span>
   </div>;
 }
@@ -248,7 +254,11 @@ function SatelliteMap({ poles, selected, onSelect, onOpen, project }: { poles: P
   for (let ty = Math.floor(top / 256); ty <= Math.floor((top + size.height) / 256); ty += 1) for (let tx = Math.floor(left / 256); tx <= Math.floor((left + size.width) / 256); tx += 1) if (ty >= 0 && ty < count) tiles.push({ key: `${tx}-${ty}`, x: tx, y: ty, urlX: ((tx % count) + count) % count });
   const changeZoom = (next: number) => setZoom(clamp(next, 2, 20));
   return <section className="map-panel"><header className="map-heading"><p><small>SATELLITE MAP</small><strong>{project.location_label || "Pole locations"}</strong></p><span>Drag to pan • Scroll to zoom • Click a named pole</span></header><div ref={frame} className="slippy-map" onWheel={(event) => { event.preventDefault(); changeZoom(zoom + (event.deltaY < 0 ? 1 : -1)); }} onPointerDown={(event) => { if (event.button !== 0 || (event.target as HTMLElement).closest("button,a,.map-selected-card")) return; drag.current = { x: event.clientX, y: event.clientY, centerX: centerWorld.x, centerY: centerWorld.y }; event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { if (!drag.current) return; const world = { x: drag.current.centerX - (event.clientX - drag.current.x), y: drag.current.centerY - (event.clientY - drag.current.y) }; setCenter(pointToLonLat(world.x, world.y, zoom)); }} onPointerUp={() => { drag.current = null; }}>
-    <div className="map-tiles">{tiles.map((tile) => <img key={tile.key} src={`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${tile.y}/${tile.urlX}`} alt="" draggable={false} style={{ left: tile.x * 256 - left, top: tile.y * 256 - top }} />)}</div>
+    <div className="map-tiles">{tiles.map((tile) => (
+      // Dynamic map tiles use exact pixel coordinates and are not suitable for image optimization.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img key={tile.key} src={`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${tile.y}/${tile.urlX}`} alt="" draggable={false} style={{ left: tile.x * 256 - left, top: tile.y * 256 - top }} />
+    ))}</div>
     <span className="imagery-badge"><i /> SATELLITE IMAGERY</span><div className="map-controls"><button onClick={() => changeZoom(zoom + 1)}><Plus /></button><button onClick={() => changeZoom(zoom - 1)}><Minus /></button><button onClick={fit}><Crosshair /></button></div>
     {poles.map((pole) => { const point = worldPoint(pole.longitude, pole.latitude, zoom); return <button key={pole.id} className={`map-pole-marker ${selected?.id === pole.id ? "selected" : ""}`} style={{ left: point.x - left, top: point.y - top }} onClick={() => onSelect(pole)}><i /><span>{pole.poleName}</span></button>; })}
     <div className="map-legend"><span><i className="complete" /> Measurements + model</span><span><i className="location" /> Location only</span></div>

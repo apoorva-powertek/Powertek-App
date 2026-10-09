@@ -2,6 +2,8 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import type { PortalUser } from "@/lib/portal-types";
 import { authenticatedFetch } from "@/lib/supabase";
 import { ImportDialog } from "@/components/import-dialog";
@@ -21,7 +23,7 @@ type Dashboard = { user: PortalUser; clients: ClientRow[]; projects: ProjectRow[
 const emptyDashboard: Dashboard = { user: {} as PortalUser, clients: [], projects: [], users: [] };
 
 function Brand() {
-  return <div className="portal-brand"><img src="/powertek-logo.svg" alt="Powertek Utility Services" /></div>;
+  return <div className="portal-brand"><Image src="/powertek-logo.svg" alt="Powertek Utility Services" width={362} height={108} priority /></div>;
 }
 
 async function jsonRequest<T>(url: string, init?: RequestInit): Promise<T> {
@@ -32,6 +34,7 @@ async function jsonRequest<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export function PortalApp({ initialUser, signOutPath, onSignOut }: { initialUser: PortalUser; signOutPath: string; onSignOut?: () => void }) {
+  const router = useRouter();
   const [data, setData] = useState<Dashboard>({ ...emptyDashboard, user: initialUser });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -85,14 +88,14 @@ export function PortalApp({ initialUser, signOutPath, onSignOut }: { initialUser
         execute: async (input: unknown) => {
           const projectId = String((input as { projectId?: unknown })?.projectId ?? "");
           if (!data.projects.some((p) => p.id === projectId)) throw new Error("Project is not assigned to this account");
-          window.location.assign(`/projects/${encodeURIComponent(projectId)}`);
+          router.push(`/projects/${encodeURIComponent(projectId)}`);
           return { opened: true, projectId };
         },
       }, { signal: lifecycle.signal });
     };
     void register().catch(() => undefined);
     return () => lifecycle.abort();
-  }, [data.projects]);
+  }, [data.projects, router]);
 
   async function createClient(event: React.FormEvent) {
     event.preventDefault(); setSaving(true); setError("");
@@ -162,7 +165,7 @@ export function PortalApp({ initialUser, signOutPath, onSignOut }: { initialUser
               <article><span><Download /></span><p><small>EXPORTS</small><strong>Single + bulk</strong></p></article>
             </section>
             <div className="project-toolbar"><label><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search client, project, or location" /></label>{isAdmin && <button className="orange-button" onClick={() => setTab("import")}><CloudUpload /> Upload project data</button>}</div>
-            {loading ? <div className="loading-panel"><span /><p>Loading project workspace…</p></div> : filteredProjects.length === 0 ? <div className="empty-panel"><MapPinned /><h2>{data.projects.length ? "No matching projects" : "Create your first pole project"}</h2><p>{isAdmin ? "Add a client, create a project, then upload the location spreadsheet, JSON, and original images." : "Your administrator has not assigned a project yet."}</p>{isAdmin && <button className="orange-button" onClick={() => setTab("clients")}><Plus /> Add first client</button>}</div> : <section className="project-grid">{filteredProjects.map((project) => <button className="project-card" key={project.id} onClick={() => window.location.assign(`/projects/${project.id}`)}><div className="project-card-top"><span className="project-code">{project.code.slice(0, 6)}</span><span className="project-status"><i /> {project.status}</span></div><p>{project.client_name}</p><h2>{project.name}</h2><span className="project-location"><MapPinned /> {project.location_label || "Location from survey coordinates"}</span><div className="project-metrics"><span><b>{Number(project.pole_count).toLocaleString()}</b> poles</span><span><b>{Number(project.complete_count).toLocaleString()}</b> photos</span><span><b>{Number(project.attachment_count).toLocaleString()}</b> points</span></div><footer><span>Open project map</span><ChevronRight /></footer></button>)}</section>}
+            {loading ? <div className="loading-panel"><span /><p>Loading project workspace…</p></div> : filteredProjects.length === 0 ? <div className="empty-panel"><MapPinned /><h2>{data.projects.length ? "No matching projects" : "Create your first pole project"}</h2><p>{isAdmin ? "Add a client, create a project, then upload the location spreadsheet, JSON, and original images." : "Your administrator has not assigned a project yet."}</p>{isAdmin && <button className="orange-button" onClick={() => setTab("clients")}><Plus /> Add first client</button>}</div> : <section className="project-grid">{filteredProjects.map((project) => <button className="project-card" key={project.id} onClick={() => router.push(`/projects/${encodeURIComponent(project.id)}`)}><div className="project-card-top"><span className="project-code">{project.code.slice(0, 6)}</span><span className="project-status"><i /> {project.status}</span></div><p>{project.client_name}</p><h2>{project.name}</h2><span className="project-location"><MapPinned /> {project.location_label || "Location from survey coordinates"}</span><div className="project-metrics"><span><b>{Number(project.pole_count).toLocaleString()}</b> poles</span><span><b>{Number(project.complete_count).toLocaleString()}</b> photos</span><span><b>{Number(project.attachment_count).toLocaleString()}</b> points</span></div><footer><span>Open project map</span><ChevronRight /></footer></button>)}</section>}
           </>}
 
           {tab === "clients" && isAdmin && <section className="admin-two-col"><div className="admin-card"><div className="card-heading"><span><Building2 /></span><div><p className="eyebrow">NEW CLIENT</p><h2>Create client workspace</h2></div></div><form onSubmit={createClient} className="admin-form"><label>Client name<input required value={clientForm.name} onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })} placeholder="Northline Utilities" /></label><label>Client code<input value={clientForm.code} onChange={(e) => setClientForm({ ...clientForm, code: e.target.value })} placeholder="NORTHLINE" /></label><button className="orange-button" disabled={saving}><Plus /> Create client</button></form></div><div className="admin-list-card"><div className="list-heading"><h2>All clients</h2><span>{data.clients.length}</span></div>{data.clients.map((client) => <div className="admin-list-row" key={client.id}><span className="client-monogram">{client.name.slice(0, 2).toUpperCase()}</span><p><strong>{client.name}</strong><small>{client.code} • {client.project_count} projects</small></p><span className="active-tag">Active</span></div>)}</div><div className="admin-card project-create-card"><div className="card-heading"><span><FolderKanban /></span><div><p className="eyebrow">NEW PROJECT</p><h2>Add a project</h2></div></div><form onSubmit={createProject} className="admin-form form-grid"><label>Client<select required value={projectForm.clientId} onChange={(e) => setProjectForm({ ...projectForm, clientId: e.target.value })}><option value="">Choose client</option>{data.clients.map((client) => <option key={client.id} value={client.id}>{client.name}</option>)}</select></label><label>Project name<input required value={projectForm.name} onChange={(e) => setProjectForm({ ...projectForm, name: e.target.value })} placeholder="Fort Nelson 2026 Survey" /></label><label>Project code<input value={projectForm.code} onChange={(e) => setProjectForm({ ...projectForm, code: e.target.value })} placeholder="FN-2026" /></label><label>Location label<input value={projectForm.locationLabel} onChange={(e) => setProjectForm({ ...projectForm, locationLabel: e.target.value })} placeholder="Fort Nelson, BC" /></label><button className="orange-button" disabled={saving}><Plus /> Create project</button></form></div></section>}

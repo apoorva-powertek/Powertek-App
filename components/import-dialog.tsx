@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { ProjectRow } from "@/components/portal-app";
 import type { ImportAttachment, ImportPole } from "@/lib/portal-types";
 import { authenticatedFetch } from "@/lib/supabase";
@@ -183,6 +184,7 @@ async function uploadEntry(projectId: string, kind: "image" | "json" | "spreadsh
 }
 
 export function ImportDialog({ projects, onComplete }: { projects: ProjectRow[]; onComplete: (message: string) => Promise<void> | void }) {
+  const router = useRouter();
   const [projectId, setProjectId] = useState(projects[0]?.id ?? "");
   const [spreadsheet, setSpreadsheet] = useState<File | null>(null);
   const [jsonFiles, setJsonFiles] = useState<File[]>([]);
@@ -234,7 +236,7 @@ export function ImportDialog({ projects, onComplete }: { projects: ProjectRow[];
       }
       setProgress(100); setPhase("Import complete");
       await onComplete(`${poles.length} poles and ${metadata.importedAttachments ?? 0} attachment heights imported`);
-      window.setTimeout(() => window.location.assign(`/projects/${encodeURIComponent(projectId)}`), 650);
+      window.setTimeout(() => router.push(`/projects/${encodeURIComponent(projectId)}`), 650);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Import failed"); setPhase("Import stopped");
     } finally { setBusy(false); }
