@@ -6,9 +6,13 @@ import type { PortalUser } from "@/lib/portal-types";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://goqvlgiqqrglyjgpktav.supabase.co";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_gjaMRAc0d3YhjSD0ox_IfA_Fcztp7We";
 
+let browserClient: SupabaseClient | undefined;
+
 export function createBrowserSupabase(): SupabaseClient {
   if (!supabaseUrl || !supabaseKey) throw new Error("Supabase is not configured. Add the Supabase URL and publishable key to the Vercel project.");
-  return createClient(supabaseUrl, supabaseKey);
+  if (typeof window === "undefined") return createClient(supabaseUrl, supabaseKey);
+  browserClient ??= createClient(supabaseUrl, supabaseKey);
+  return browserClient;
 }
 
 export async function authenticatedFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
