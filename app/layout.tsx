@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./brand.css";
 import "./refinement.css";
+import "./modern.css";
 
 export const metadata: Metadata = {
   title: "Powertek Utility Services | Transmission Engineering",
