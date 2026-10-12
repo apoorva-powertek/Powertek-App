@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { PortalUser } from "@/lib/portal-types";
 import type { ProjectAssignment } from "@/lib/access";
@@ -26,6 +28,7 @@ async function jsonRequest<T>(url: string, init?: RequestInit): Promise<T> {
 function dateLabel(date?: string) { return date ? new Date(date).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "No recent activity"; }
 
 export function PortalApp({ initialUser, signOutPath, onSignOut }: { initialUser: PortalUser; signOutPath: string; onSignOut?: () => void }) {
+  const router = useRouter();
   const [data, setData] = useState<Dashboard>({ user: initialUser, projects: [], clients: [], users: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -65,12 +68,12 @@ export function PortalApp({ initialUser, signOutPath, onSignOut }: { initialUser
       await context?.registerTool?.({ name: "open_pole_project", title: "Open pole project", description: "Open an assigned survey project by its exact ID.", inputSchema: { type: "object", properties: { projectId: { type: "string" } }, required: ["projectId"], additionalProperties: false }, annotations: { readOnlyHint: true, untrustedContentHint: false }, execute: async (input: unknown) => {
         const projectId = String((input as { projectId?: unknown })?.projectId ?? "");
         if (!data.projects.some((p) => p.id === projectId)) throw new Error("Project is not assigned to this account");
-        window.location.assign(`/projects/${encodeURIComponent(projectId)}`); return { opened: true, projectId };
+        router.push(`/projects/${encodeURIComponent(projectId)}`); return { opened: true, projectId };
       } }, { signal: lifecycle.signal });
     }
     void register().catch(() => undefined);
     return () => lifecycle.abort();
-  }, [data.projects]);
+  }, [data.projects, router]);
   useEffect(() => {
     if (!mobileNav) return;
     const sidebar = document.querySelector<HTMLElement>(".workspace-sidebar");
@@ -118,7 +121,7 @@ export function PortalApp({ initialUser, signOutPath, onSignOut }: { initialUser
   return <main className="saas-workspace">
     <a className="skip-link" href="#workspace-content">Skip to content</a>
     {mobileNav && <button className="nav-backdrop" aria-label="Close navigation" onClick={() => setMobileNav(false)} />}
-    <aside role={mobileNav ? "dialog" : undefined} aria-modal={mobileNav || undefined} aria-label="Workspace navigation" className={`workspace-sidebar ${mobileNav ? "is-open" : ""}`}><button className="mobile-nav-close" aria-label="Close navigation" onClick={() => setMobileNav(false)}><X size={20} /></button><a className="workspace-brand" href={isAdmin ? "/admin" : "/portal"}><img src="/powertek-logo.svg" alt="Powertek Utility Services" /></a><div className="workspace-switcher"><span className="workspace-avatar">P</span><div><strong>Powertek workspace</strong><small>{isAdmin ? "Administration" : data.user.role === "staff" ? "Internal operations" : "Client workspace"}</small></div><ShieldCheck size={16} /></div><p className="nav-section-label">WORKSPACE</p><nav aria-label="Workspace navigation">{navigation.map(({ id, icon: Icon }) => <button key={id} className={tab === id ? "active" : ""} aria-current={tab === id ? "page" : undefined} onClick={() => navigate(id)}><Icon size={18} /><span>{tabNames[id]}</span>{id === "projects" && <small>{data.projects.length}</small>}</button>)}</nav><div className="sidebar-bottom"><div className="private-workspace"><ShieldCheck size={18} /><strong>Built for trusted teams</strong><p>Invite-only access.<br />Projects stay private.</p></div><div className="sidebar-account"><span className="person-avatar">{data.user.displayName?.slice(0, 1) || "P"}</span><div><strong>{data.user.displayName}</strong><small>{data.user.role === "staff" ? "Internal team" : data.user.role === "admin" ? "Administrator" : "Client"}</small></div>{onSignOut ? <button aria-label="Sign out" onClick={onSignOut}><LogOut size={17} /></button> : <a href={signOutPath} aria-label="Sign out"><LogOut size={17} /></a>}</div></div></aside>
+    <aside role={mobileNav ? "dialog" : undefined} aria-modal={mobileNav || undefined} aria-label="Workspace navigation" className={`workspace-sidebar ${mobileNav ? "is-open" : ""}`}><button className="mobile-nav-close" aria-label="Close navigation" onClick={() => setMobileNav(false)}><X size={20} /></button><a className="workspace-brand" href={isAdmin ? "/admin" : "/portal"}><Image src="/powertek-logo.svg" alt="Powertek Utility Services" width={362} height={108} priority /></a><div className="workspace-switcher"><span className="workspace-avatar">P</span><div><strong>Powertek workspace</strong><small>{isAdmin ? "Administration" : data.user.role === "staff" ? "Internal operations" : "Client workspace"}</small></div><ShieldCheck size={16} /></div><p className="nav-section-label">WORKSPACE</p><nav aria-label="Workspace navigation">{navigation.map(({ id, icon: Icon }) => <button key={id} className={tab === id ? "active" : ""} aria-current={tab === id ? "page" : undefined} onClick={() => navigate(id)}><Icon size={18} /><span>{tabNames[id]}</span>{id === "projects" && <small>{data.projects.length}</small>}</button>)}</nav><div className="sidebar-bottom"><div className="private-workspace"><ShieldCheck size={18} /><strong>Built for trusted teams</strong><p>Invite-only access.<br />Projects stay private.</p></div><div className="sidebar-account"><span className="person-avatar">{data.user.displayName?.slice(0, 1) || "P"}</span><div><strong>{data.user.displayName}</strong><small>{data.user.role === "staff" ? "Internal team" : data.user.role === "admin" ? "Administrator" : "Client"}</small></div>{onSignOut ? <button aria-label="Sign out" onClick={onSignOut}><LogOut size={17} /></button> : <a href={signOutPath} aria-label="Sign out"><LogOut size={17} /></a>}</div></div></aside>
     <div className="workspace-body"><header className="workspace-topbar"><div><button className="mobile-menu icon-button" aria-label="Open navigation" aria-expanded={mobileNav} onClick={() => setMobileNav(!mobileNav)}><Menu size={20} /></button><span>Workspace</span><ChevronRight size={14} /><strong>{tabNames[tab]}</strong></div><div className="topbar-actions"><span className="invite-only-label"><ShieldCheck size={14} /> Invite only</span><ThemeControl /><span className="topbar-avatar">{data.user.displayName?.slice(0, 1) || "P"}</span></div></header>
     <section className="workspace-content" id="workspace-content"><div className="workspace-heading"><div><p className="eyebrow">{isAdmin ? "OPERATIONS CONTROL CENTER" : "YOUR CONNECTED WORKSPACE"}</p><h1>{tab === "overview" ? "A clearer view of everything." : tabNames[tab]}</h1><p>{descriptions[tab]}</p></div><div className="heading-actions"><button className="workspace-button secondary" onClick={() => void load()} disabled={loading} aria-label="Refresh workspace"><RefreshCw size={16} className={loading ? "spin" : ""} /><span>Refresh</span></button>{isAdmin && <button className="workspace-button primary" onClick={() => { navigate("users"); setUserForm(blankUser); setEditingUser(false); }}><MailPlus size={17} />Invite people</button>}</div></div>
     {error && <div className="workspace-alert error" role="alert"><span>{error}</span><button aria-label="Dismiss error" onClick={() => setError("")}><X size={17} /></button></div>}{notice && <div className="workspace-alert success" role="status"><Check size={17} /><span>{notice}</span></div>}

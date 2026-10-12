@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import "../node_modules/tailwindcss/index.css";
+@import "../node_modules/tw-animate-css/dist/tw-animate.css";
 @import "../vendor/shadcn-tailwind-4.13.0.css";
 
 :root{--ink:#06131f;--ink-2:#0a1b2c;--panel:#0e2338;--panel-2:#102940;--line:#244158;--line-soft:#193247;--muted:#86a0b5;--muted-2:#5f7d94;--white:#f5f9fc;--orange:#f47d36;--orange-2:#ff9a55;--mint:#53dbb5;--blue:#5ca9ff;--danger:#ff6d6d;--shadow:0 22px 70px rgba(0,0,0,.32);font-synthesis:none}

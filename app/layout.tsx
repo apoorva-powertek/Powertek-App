@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./brand.css";
+import "./refinement.css";
+import "./modern.css";
 import "./workspace.css";
 
 export const metadata: Metadata = {
   title: "Powertek Utility Services | Transmission Engineering",
   description: "Transmission line modelling, thermal rating analysis, vegetation management, and aerial inspection from Powertek Utility Services.",
-  other: {
-    "codex-preview": "development",
-  },
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

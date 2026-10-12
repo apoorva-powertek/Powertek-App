@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -16,7 +17,8 @@ type ProjectInfo = { id: string; name: string; code: string; description: string
 type ProjectPayload = { project: ProjectInfo; poles: PoleRecord[] };
 type ViewName = "map" | "split" | "photo" | "profile";
 
-function Brand() { return <div className="portal-brand compact"><img src="/powertek-logo.svg" alt="Powertek Utility Services" /></div>; }
+function Brand() { return <div className="portal-brand compact"><Image src="/powertek-logo.svg" alt="Powertek Utility Services" width={362} height={108} priority /></div>; }
+function projectImageUrl(projectId: string, poleId: string) { return `/api/projects/${encodeURIComponent(projectId)}/poles/${encodeURIComponent(poleId)}/image`; }
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 const meters = (value: number | null | undefined, digits = 2) => value == null ? "—" : `${Number(value).toFixed(digits)} m`;
 const safeName = (value: string) => value.replace(/[^a-z0-9_-]+/gi, "_").replace(/^_+|_+$/g, "") || "pole";
@@ -111,7 +113,7 @@ export function ProjectViewer({ projectId, user, signOutPath, onSignOut }: { pro
         [`${safeName(pole.poleName)}_report.html`]: strToU8(reportHtml(data.project, pole)),
       };
       if (pole.imageFilename) {
-        const response = await authenticatedFetch(`/api/projects/${projectId}/poles/${pole.id}/image`);
+        const response = await authenticatedFetch(projectImageUrl(projectId, pole.id));
         if (response.ok) files[`original_photo/${safeName(pole.imageFilename)}`] = new Uint8Array(await response.arrayBuffer());
       }
       downloadBlob(new Blob([zipSync(files, { level: 0 }).buffer as ArrayBuffer], { type: "application/zip" }), `${safeName(pole.poleName)}_pole_package.zip`);
@@ -132,7 +134,7 @@ export function ProjectViewer({ projectId, user, signOutPath, onSignOut }: { pro
         setExporting(`Collecting original photo ${index + 1} of ${data.poles.length}`);
         files[`reports/${safeName(pole.poleName)}.html`] = strToU8(reportHtml(data.project, pole));
         if (!pole.imageFilename) continue;
-        const response = await authenticatedFetch(`/api/projects/${projectId}/poles/${pole.id}/image`);
+        const response = await authenticatedFetch(projectImageUrl(projectId, pole.id));
         if (response.ok) files[`original_photos/${safeName(pole.imageFilename)}`] = new Uint8Array(await response.arrayBuffer());
       }
       setExporting("Compressing project package");
@@ -161,7 +163,6 @@ export function ProjectViewer({ projectId, user, signOutPath, onSignOut }: { pro
 
 function PanelHeader({ eyebrow, title, trailing }: { eyebrow: string; title: string; trailing: string }) { return <header className="panel-header"><p><small>{eyebrow}</small><strong>{title}</strong></p><span>{trailing}</span></header>; }
 
-function projectImageUrl(projectId: string, pole: PoleRecord) { return `/api/projects/${encodeURIComponent(projectId)}/poles/${encodeURIComponent(pole.id)}/image`; }
 
 function PhotoZoom({ pole, projectId, focusAttachment }: { pole: PoleRecord; projectId: string; focusAttachment: AttachmentRecord | null }) {
   const frame = useRef<HTMLDivElement>(null); const drag = useRef<{ x: number; y: number; px: number; py: number } | null>(null);
@@ -171,7 +172,7 @@ function PhotoZoom({ pole, projectId, focusAttachment }: { pole: PoleRecord; pro
   const fitScale = Math.min(size.width / natural.width, size.height / natural.height) * 0.94;
   const fit = useCallback(() => { setScale(fitScale); setPan({ x: (size.width - natural.width * fitScale) / 2, y: (size.height - natural.height * fitScale) / 2 }); }, [fitScale, natural.height, natural.width, size.height, size.width]);
   useEffect(() => { const node = frame.current; if (!node) return; const observer = new ResizeObserver(([entry]) => setSize({ width: entry.contentRect.width, height: entry.contentRect.height })); observer.observe(node); return () => observer.disconnect(); }, []);
-  useEffect(() => { let objectUrl = ""; let active = true; setLoaded(false); void authenticatedFetch(projectImageUrl(projectId, pole)).then(async (response) => { if (!response.ok) throw new Error("Photo is unavailable"); return response.blob(); }).then((blob) => { if (!active) return; objectUrl = URL.createObjectURL(blob); setImageSrc(objectUrl); }).catch(() => { if (active) setImageSrc(""); }); return () => { active = false; if (objectUrl) URL.revokeObjectURL(objectUrl); }; }, [pole.id, projectId]);
+  useEffect(() => { let objectUrl = ""; let active = true; setLoaded(false); void authenticatedFetch(projectImageUrl(projectId, pole.id)).then(async (response) => { if (!response.ok) throw new Error("Photo is unavailable"); return response.blob(); }).then((blob) => { if (!active) return; objectUrl = URL.createObjectURL(blob); setImageSrc(objectUrl); }).catch(() => { if (active) setImageSrc(""); }); return () => { active = false; if (objectUrl) URL.revokeObjectURL(objectUrl); }; }, [pole, projectId]);
   useEffect(() => { setLoaded(false); setNatural({ width: pole.imageWidth || 3024, height: pole.imageHeight || 4032 }); }, [pole.id, pole.imageHeight, pole.imageWidth]);
   useEffect(() => { fit(); }, [fit]);
   useEffect(() => { if (!focusAttachment || focusAttachment.photoX == null || focusAttachment.photoY == null) return; const next = Math.max(fitScale * 2.6, 0.75); setScale(next); setPan({ x: size.width / 2 - focusAttachment.photoX * next, y: size.height / 2 - focusAttachment.photoY * next }); }, [focusAttachment, fitScale, size.height, size.width]);
