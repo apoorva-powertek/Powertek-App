@@ -1,178 +1,140 @@
 "use client";
-/* eslint-disable react-hooks/set-state-in-effect */
-
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { PortalUser } from "@/lib/portal-types";
-import { authenticatedFetch, createBrowserSupabase } from "@/lib/supabase";
+import type { ProjectAssignment } from "@/lib/access";
+import { canManageClients } from "@/lib/access";
+import { defaultFilters, filterProjects, progressPercent, summarizeProjects, type DashboardProject } from "@/lib/dashboard";
+import { authenticatedFetch } from "@/lib/supabase";
 import { ImportDialog } from "@/components/import-dialog";
-import {
-  Building2, ChevronRight, CircleUserRound, CloudUpload, Download, FolderKanban,
-  Gauge, HardDrive, LogOut, MapPinned, Plus, RefreshCw, Search, ShieldCheck, UsersRound,
-} from "lucide-react";
+import { ThemeControl } from "@/components/theme-control";
+import { ArrowDownToLine, ArrowUpRight, Building2, Check, ChevronRight, CloudUpload, FolderKanban, Gauge, LayoutDashboard, LayoutGrid, List, LogOut, MailPlus, MapPinned, Menu, Plus, RefreshCw, Search, ShieldCheck, SlidersHorizontal, UsersRound, X } from "lucide-react";
 
+export type ProjectRow = DashboardProject;
 type ClientRow = { id: string; name: string; code: string; status: string; project_count: number };
-export type ProjectRow = {
-  id: string; client_id: string; client_name: string; name: string; code: string; description: string;
-  location_label: string; status: string; pole_count: number; complete_count: number; attachment_count: number;
-};
-type UserRow = { id: string; email: string; display_name: string; role: string; status: string; project_names: string; project_count: number };
+type UserRow = { id: string; email: string; display_name: string; role: string; status: string; project_names: string; project_count: number; invitation_status: string; invited_at?: string; permissions?: { manageClients: boolean }; assignments: ProjectAssignment[] };
 type Dashboard = { user: PortalUser; clients: ClientRow[]; projects: ProjectRow[]; users: UserRow[] };
-
-const emptyDashboard: Dashboard = { user: {} as PortalUser, clients: [], projects: [], users: [] };
-
-function Brand() {
-  return <div className="portal-brand"><img src="/powertek-logo.svg" alt="Powertek Utility Services" /></div>;
-}
-
+type Tab = "overview" | "projects" | "clients" | "users" | "import";
+const tabNames: Record<Tab, string> = { overview: "Overview", projects: "Projects", clients: "Clients", users: "People & access", import: "Upload data" };
+const blankUser = { displayName: "", email: "", role: "client", manageClients: false, assignments: [] as ProjectAssignment[] };
+const descriptions: Record<Tab, string> = { overview: "The full picture of your field operations, in one place.", projects: "A structured home for every survey, location, and measurement.", clients: "Every client. Their projects. One connected portfolio.", users: "Invite your team and clients. Give each person exactly the access they need.", import: "Turn field files into a complete, connected project workspace." };
 async function jsonRequest<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await authenticatedFetch(url, { ...init, headers: { "content-type": "application/json", ...(init?.headers ?? {}) } });
   const data = await response.json().catch(() => ({})) as { error?: string };
   if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
   return data as T;
 }
+function dateLabel(date?: string) { return date ? new Date(date).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "No recent activity"; }
 
 export function PortalApp({ initialUser, signOutPath, onSignOut }: { initialUser: PortalUser; signOutPath: string; onSignOut?: () => void }) {
-  const [data, setData] = useState<Dashboard>({ ...emptyDashboard, user: initialUser });
+  const [data, setData] = useState<Dashboard>({ user: initialUser, projects: [], clients: [], users: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [query, setQuery] = useState("");
-  const [tab, setTab] = useState<"projects" | "clients" | "users" | "import">("projects");
+  const [notice, setNotice] = useState("");
+  const [tab, setTab] = useState<Tab>("overview");
+  const [filters, setFilters] = useState(defaultFilters);
+  const [advanced, setAdvanced] = useState(false);
+  const [view, setView] = useState<"grid" | "list">("grid");
+  const [mobileNav, setMobileNav] = useState(false);
   const [clientForm, setClientForm] = useState({ name: "", code: "" });
   const [projectForm, setProjectForm] = useState({ clientId: "", name: "", code: "", locationLabel: "" });
-  const [userForm, setUserForm] = useState({ displayName: "", email: "", role: "client", projectIds: [] as string[] });
+  const [userForm, setUserForm] = useState(blankUser);
+  const [editingUser, setEditingUser] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [notice, setNotice] = useState("");
-
+  const [showProjectForm, setShowProjectForm] = useState(false);
+  const isAdmin = data.user.role === "admin";
+  const manageClients = canManageClients(data.user);
+  const uploadProjects = data.projects.filter((project) => project.can_upload);
+  const filteredProjects = useMemo(() => filterProjects(data.projects, filters), [data.projects, filters]);
+  const totals = summarizeProjects(filteredProjects);
+  const clientOptions = Array.from(new Map(data.projects.map((project) => [project.client_id, project.client_name])).entries());
+  const statusOptions = Array.from(new Set(data.projects.map((project) => project.status)));
+  const hasFilters = Object.entries(filters).some(([key, value]) => key !== "sort" && value !== defaultFilters[key as keyof typeof defaultFilters]);
   const load = useCallback(async () => {
     setLoading(true); setError("");
     try { setData(await jsonRequest<Dashboard>("/api/dashboard")); }
-    catch (err) { setError(err instanceof Error ? err.message : "Could not load the workspace"); }
+    catch (err) { setError(err instanceof Error ? err.message : "Could not load workspace"); }
     finally { setLoading(false); }
   }, []);
-
-  useEffect(() => { void load(); }, [load]);
-  useEffect(() => {
-    if (!notice) return;
-    const timer = window.setTimeout(() => setNotice(""), 4200);
-    return () => window.clearTimeout(timer);
-  }, [notice]);
-
-  const filteredProjects = useMemo(() => {
-    const value = query.trim().toLowerCase();
-    if (!value) return data.projects;
-    return data.projects.filter((item) => [item.name, item.code, item.client_name, item.location_label].some((field) => String(field).toLowerCase().includes(value)));
-  }, [data.projects, query]);
-
+  useEffect(() => { const timer = window.setTimeout(() => void load(), 0); return () => window.clearTimeout(timer); }, [load]);
   useEffect(() => {
     const context = (document as Document & { modelContext?: { registerTool?: (tool: unknown, options?: { signal?: AbortSignal }) => void | Promise<void> } }).modelContext;
     if (!context?.registerTool) return;
     const lifecycle = new AbortController();
-    const register = async () => {
-      await context.registerTool?.({
-        name: "list_assigned_pole_projects",
-        title: "List pole projects",
-        description: "List the pole survey projects visible to the signed-in user.",
-        inputSchema: { type: "object", properties: {}, additionalProperties: false },
-        annotations: { readOnlyHint: true, untrustedContentHint: true },
-        execute: async () => ({ projects: data.projects.map((p) => ({ id: p.id, client: p.client_name, name: p.name, poles: Number(p.pole_count) })) }),
-      }, { signal: lifecycle.signal });
-      await context.registerTool?.({
-        name: "open_pole_project",
-        title: "Open pole project",
-        description: "Open an assigned pole survey project by its exact project id.",
-        inputSchema: { type: "object", properties: { projectId: { type: "string" } }, required: ["projectId"], additionalProperties: false },
-        annotations: { readOnlyHint: true, untrustedContentHint: false },
-        execute: async (input: unknown) => {
-          const projectId = String((input as { projectId?: unknown })?.projectId ?? "");
-          if (!data.projects.some((p) => p.id === projectId)) throw new Error("Project is not assigned to this account");
-          window.location.assign(`/projects/${encodeURIComponent(projectId)}`);
-          return { opened: true, projectId };
-        },
-      }, { signal: lifecycle.signal });
-    };
+    async function register() {
+      await context?.registerTool?.({ name: "list_assigned_pole_projects", title: "List pole projects", description: "List the survey projects visible to the signed-in user.", inputSchema: { type: "object", properties: {}, additionalProperties: false }, annotations: { readOnlyHint: true, untrustedContentHint: true }, execute: async () => ({ projects: data.projects.map((p) => ({ id: p.id, client: p.client_name, name: p.name, poles: p.pole_count })) }) }, { signal: lifecycle.signal });
+      await context?.registerTool?.({ name: "open_pole_project", title: "Open pole project", description: "Open an assigned survey project by its exact ID.", inputSchema: { type: "object", properties: { projectId: { type: "string" } }, required: ["projectId"], additionalProperties: false }, annotations: { readOnlyHint: true, untrustedContentHint: false }, execute: async (input: unknown) => {
+        const projectId = String((input as { projectId?: unknown })?.projectId ?? "");
+        if (!data.projects.some((p) => p.id === projectId)) throw new Error("Project is not assigned to this account");
+        window.location.assign(`/projects/${encodeURIComponent(projectId)}`); return { opened: true, projectId };
+      } }, { signal: lifecycle.signal });
+    }
     void register().catch(() => undefined);
     return () => lifecycle.abort();
   }, [data.projects]);
-
-  async function createClient(event: React.FormEvent) {
-    event.preventDefault(); setSaving(true); setError("");
+  useEffect(() => {
+    if (!mobileNav) return;
+    const sidebar = document.querySelector<HTMLElement>(".workspace-sidebar");
+    const previous = document.activeElement as HTMLElement | null;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    sidebar?.querySelector<HTMLElement>(".mobile-nav-close")?.focus();
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") { setMobileNav(false); return; }
+      if (event.key !== "Tab" || !sidebar) return;
+      const items = Array.from(sidebar.querySelectorAll<HTMLElement>("button:not([disabled]),a[href],input")).filter((el) => el.getClientRects().length > 0);
+      const first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => { document.body.style.overflow = originalOverflow; document.removeEventListener("keydown", onKey); previous?.focus(); };
+  }, [mobileNav]);
+  function navigate(next: Tab) { setTab(next); setMobileNav(false); setError(""); setNotice(""); }
+  async function save(event: React.FormEvent, kind: "client" | "project" | "user", sendInvite = false) {
+    event.preventDefault(); setSaving(true); setError(""); setNotice("");
     try {
-      await jsonRequest("/api/admin/clients", { method: "POST", body: JSON.stringify(clientForm) });
-      setClientForm({ name: "", code: "" }); setNotice("Client created"); await load();
-    } catch (err) { setError(err instanceof Error ? err.message : "Could not create client"); }
+      await jsonRequest(`/api/admin/${kind === "client" ? "clients" : kind === "project" ? "projects" : "users"}`, { method: "POST", body: JSON.stringify(kind === "client" ? clientForm : kind === "project" ? projectForm : { ...userForm, sendInvite }) });
+      if (kind === "client") setClientForm({ name: "", code: "" });
+      if (kind === "project") { setProjectForm({ clientId: "", name: "", code: "", locationLabel: "" }); setShowProjectForm(false); }
+      if (kind === "user") { setUserForm(blankUser); setEditingUser(false); }
+      await load(); setNotice(kind === "user" ? sendInvite ? "Invitation email sent. Your invitee can now choose a password." : "Permissions updated." : kind === "client" ? "Client workspace created." : "Project created.");
+    } catch (err) { setError(err instanceof Error ? err.message : "Could not save changes"); }
     finally { setSaving(false); }
   }
-
-  async function createProject(event: React.FormEvent) {
-    event.preventDefault(); setSaving(true); setError("");
-    try {
-      await jsonRequest("/api/admin/projects", { method: "POST", body: JSON.stringify(projectForm) });
-      setProjectForm({ clientId: "", name: "", code: "", locationLabel: "" }); setNotice("Project created"); await load();
-    } catch (err) { setError(err instanceof Error ? err.message : "Could not create project"); }
-    finally { setSaving(false); }
+  function editUser(user: UserRow) {
+    setUserForm({ displayName: user.display_name, email: user.email, role: user.role, manageClients: user.permissions?.manageClients === true, assignments: user.assignments || [] });
+    setEditingUser(true); document.getElementById("user-access-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
-
-  async function saveUser(event: React.FormEvent) {
-    event.preventDefault(); setSaving(true); setError("");
-    try {
-      await jsonRequest("/api/admin/users", { method: "POST", body: JSON.stringify(userForm) });
-      setUserForm({ displayName: "", email: "", role: "client", projectIds: [] }); setNotice("User access saved"); await load();
-    } catch (err) { setError(err instanceof Error ? err.message : "Could not save user"); }
-    finally { setSaving(false); }
+  function exportSummary() {
+    const rows = [["Project", "Client", "Status", "Poles", "Complete poles", "Measurements", "Completion %", "Updated"], ...filteredProjects.map((p) => [p.name, p.client_name, p.status, p.pole_count, p.complete_count, p.attachment_count, progressPercent(p), p.updated_at || ""])];
+    const csv = rows.map((row) => row.map((value) => { const text = String(value); return '"' + (/^[=+@\-\t\r]/.test(text) ? "'" + text : text).replaceAll('"', '""') + '"'; }).join(",")).join("\r\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a"); link.href = url; link.download = "powertek-project-summary.csv"; link.click(); URL.revokeObjectURL(url);
   }
-
-  const totalPoles = data.projects.reduce((sum, item) => sum + Number(item.pole_count), 0);
-  const totalAttachments = data.projects.reduce((sum, item) => sum + Number(item.attachment_count), 0);
-  const isAdmin = data.user.role === "admin";
-
-  return (
-    <main className="portal-shell">
-      <header className="portal-header">
-        <Brand />
-        <div className="portal-header-right">
-          <span className="role-pill"><ShieldCheck size={13} /> {isAdmin ? "Administrator" : "Client access"}</span>
-          <span className="account-name"><CircleUserRound size={17} /><span><strong>{data.user.displayName}</strong><small>{data.user.email}</small></span></span>
-          {onSignOut ? <button className="icon-button" onClick={onSignOut} aria-label="Sign out"><LogOut size={17} /></button> : <a className="icon-button" href={signOutPath} aria-label="Sign out"><LogOut size={17} /></a>}
-        </div>
-      </header>
-      <div className="portal-layout">
-        <aside className="portal-sidebar">
-          <div className="sidebar-kicker">WORKSPACE</div>
-          <nav>
-            <button className={tab === "projects" ? "active" : ""} onClick={() => setTab("projects")}><FolderKanban /> Projects <span>{data.projects.length}</span></button>
-            {isAdmin && <button className={tab === "clients" ? "active" : ""} onClick={() => setTab("clients")}><Building2 /> Clients <span>{data.clients.length}</span></button>}
-            {isAdmin && <button className={tab === "users" ? "active" : ""} onClick={() => setTab("users")}><UsersRound /> User access <span>{data.users.length}</span></button>}
-            {isAdmin && <button className={tab === "import" ? "active" : ""} onClick={() => setTab("import")}><CloudUpload /> Upload data</button>}
-          </nav>
-          <div className="sidebar-help"><HardDrive /><p><strong>Original-file storage</strong><span>Photos are served at their uploaded resolution for sharp zoom.</span></p></div>
-        </aside>
-        <section className="portal-main">
-          {notice && <div className="notice-toast">{notice}</div>}
-          <div className="workspace-title">
-            <div><p className="eyebrow">{isAdmin ? "ADMIN CONTROL CENTER" : "ASSIGNED WORKSPACE"}</p><h1>{tab === "projects" ? "Pole survey projects" : tab === "clients" ? "Client portfolio" : tab === "users" ? "User access" : "Project data upload"}</h1><p>{tab === "projects" ? "Open a project to view satellite locations, original photos, measured heights, and engineering models." : tab === "clients" ? "Organize every customer into one or more separate projects." : tab === "users" ? "Invite by verified email and assign only the projects each client may access." : "Upload one location spreadsheet, measurement JSON, and original-quality pole photos."}</p></div>
-            <button className="ghost-button" onClick={() => void load()} disabled={loading}><RefreshCw className={loading ? "spin" : ""} /> Refresh</button>
-          </div>
-          {error && <div className="error-banner">{error}<button onClick={() => setError("")}>×</button></div>}
-
-          {tab === "projects" && <>
-            <section className="stats-grid">
-              <article><span><FolderKanban /></span><p><small>ACTIVE PROJECTS</small><strong>{data.projects.length}</strong></p></article>
-              <article><span><MapPinned /></span><p><small>POLE LOCATIONS</small><strong>{totalPoles.toLocaleString()}</strong></p></article>
-              <article><span><Gauge /></span><p><small>MEASURED POINTS</small><strong>{totalAttachments.toLocaleString()}</strong></p></article>
-              <article><span><Download /></span><p><small>EXPORTS</small><strong>Single + bulk</strong></p></article>
-            </section>
-            <div className="project-toolbar"><label><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search client, project, or location" /></label>{isAdmin && <button className="orange-button" onClick={() => setTab("import")}><CloudUpload /> Upload project data</button>}</div>
-            {loading ? <div className="loading-panel"><span /><p>Loading project workspace…</p></div> : filteredProjects.length === 0 ? <div className="empty-panel"><MapPinned /><h2>{data.projects.length ? "No matching projects" : "Create your first pole project"}</h2><p>{isAdmin ? "Add a client, create a project, then upload the location spreadsheet, JSON, and original images." : "Your administrator has not assigned a project yet."}</p>{isAdmin && <button className="orange-button" onClick={() => setTab("clients")}><Plus /> Add first client</button>}</div> : <section className="project-grid">{filteredProjects.map((project) => <button className="project-card" key={project.id} onClick={() => window.location.assign(`/projects/${project.id}`)}><div className="project-card-top"><span className="project-code">{project.code.slice(0, 5)}</span><span className="project-status"><i /> Active</span></div><p>{project.client_name}</p><h2>{project.name}</h2><span className="project-location"><MapPinned /> {project.location_label || "Location from survey coordinates"}</span><div className="project-metrics"><span><b>{Number(project.pole_count).toLocaleString()}</b> poles</span><span><b>{Number(project.complete_count).toLocaleString()}</b> photos</span><span><b>{Number(project.attachment_count).toLocaleString()}</b> points</span></div><footer><span>Open project map</span><ChevronRight /></footer></button>)}</section>}
-          </>}
-
-          {tab === "clients" && isAdmin && <section className="admin-two-col"><div className="admin-card"><div className="card-heading"><span><Building2 /></span><div><p className="eyebrow">NEW CLIENT</p><h2>Create client workspace</h2></div></div><form onSubmit={createClient} className="admin-form"><label>Client name<input required value={clientForm.name} onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })} placeholder="Northline Utilities" /></label><label>Client code<input value={clientForm.code} onChange={(e) => setClientForm({ ...clientForm, code: e.target.value })} placeholder="NORTHLINE" /></label><button className="orange-button" disabled={saving}><Plus /> Create client</button></form></div><div className="admin-list-card"><div className="list-heading"><h2>All clients</h2><span>{data.clients.length}</span></div>{data.clients.map((client) => <div className="admin-list-row" key={client.id}><span className="client-monogram">{client.name.slice(0, 2).toUpperCase()}</span><p><strong>{client.name}</strong><small>{client.code} • {client.project_count} projects</small></p><span className="active-tag">Active</span></div>)}</div><div className="admin-card project-create-card"><div className="card-heading"><span><FolderKanban /></span><div><p className="eyebrow">NEW PROJECT</p><h2>Add a project</h2></div></div><form onSubmit={createProject} className="admin-form form-grid"><label>Client<select required value={projectForm.clientId} onChange={(e) => setProjectForm({ ...projectForm, clientId: e.target.value })}><option value="">Choose client</option>{data.clients.map((client) => <option key={client.id} value={client.id}>{client.name}</option>)}</select></label><label>Project name<input required value={projectForm.name} onChange={(e) => setProjectForm({ ...projectForm, name: e.target.value })} placeholder="Fort Nelson 2026 Survey" /></label><label>Project code<input value={projectForm.code} onChange={(e) => setProjectForm({ ...projectForm, code: e.target.value })} placeholder="FN-2026" /></label><label>Location label<input value={projectForm.locationLabel} onChange={(e) => setProjectForm({ ...projectForm, locationLabel: e.target.value })} placeholder="Fort Nelson, BC" /></label><button className="orange-button" disabled={saving}><Plus /> Create project</button></form></div></section>}
-
-          {tab === "users" && isAdmin && <section className="admin-two-col"><div className="admin-card"><div className="card-heading"><span><UsersRound /></span><div><p className="eyebrow">CLIENT ACCESS</p><h2>Invite or update user</h2></div></div><form onSubmit={saveUser} className="admin-form"><label>Display name<input value={userForm.displayName} onChange={(e) => setUserForm({ ...userForm, displayName: e.target.value })} placeholder="Client engineer" /></label><label>Verified email<input type="email" required value={userForm.email} onChange={(e) => setUserForm({ ...userForm, email: e.target.value })} placeholder="engineer@client.com" /></label><label>Role<select value={userForm.role} onChange={(e) => setUserForm({ ...userForm, role: e.target.value, projectIds: e.target.value === "admin" ? [] : userForm.projectIds })}><option value="client">Client user</option><option value="admin">Administrator</option></select></label>{userForm.role === "client" && <fieldset><legend>Assigned projects</legend>{data.projects.map((project) => <label className="check-row" key={project.id}><input type="checkbox" checked={userForm.projectIds.includes(project.id)} onChange={(e) => setUserForm({ ...userForm, projectIds: e.target.checked ? [...userForm.projectIds, project.id] : userForm.projectIds.filter((id) => id !== project.id) })} /><span><strong>{project.name}</strong><small>{project.client_name}</small></span></label>)}</fieldset>}<button className="orange-button" disabled={saving}><ShieldCheck /> Save access</button></form></div><div className="admin-list-card"><div className="list-heading"><h2>Authorized users</h2><span>{data.users.length}</span></div>{data.users.map((user) => <div className="admin-list-row" key={user.id}><span className="client-monogram user">{user.display_name.slice(0, 2).toUpperCase()}</span><p><strong>{user.display_name}</strong><small>{user.email}</small><em>{user.role === "admin" ? "All projects" : user.project_names || "No project"}</em></p><span className={user.role === "admin" ? "admin-tag" : "active-tag"}>{user.role}</span></div>)}</div></section>}
-
-          {tab === "import" && isAdmin && <ImportDialog projects={data.projects} onComplete={async (message) => { setNotice(message); await load(); }} />}
-        </section>
-      </div>
-    </main>
-  );
+  function ProjectCard({ project }: { project: ProjectRow }) {
+    return <a className={`workspace-project-card ${view === "list" ? "is-list" : ""}`} href={`/projects/${encodeURIComponent(project.id)}`}><div className="project-card-art" aria-hidden="true"><svg viewBox="0 0 320 100"><path d="M0 80L320 20M0 25L320 75M65 0L200 100M225 0L125 100" /><circle cx="115" cy="45" r="5" /><circle cx="174" cy="47" r="5" /><circle cx="238" cy="35" r="5" /><path className="survey-line" d="M115 45L174 47L238 35" /></svg><span>{project.code || "SURVEY"}</span></div><div className="project-card-body"><div className="project-card-meta"><span>{project.client_name}</span><span className={`status-badge ${project.status === "active" ? "active" : ""}`}>{project.status}</span></div><h2>{project.name}</h2><p className="project-card-location"><MapPinned size={14} />{project.location_label || "Location not specified"}</p><div className="project-card-numbers"><span><strong>{project.pole_count.toLocaleString()}</strong>Poles</span><span><strong>{project.attachment_count.toLocaleString()}</strong>Measurements</span><span><strong>{project.complete_count.toLocaleString()}</strong>Complete</span></div><div className="progress-caption"><span>Survey completion</span><strong>{progressPercent(project)}%</strong></div><div className="progress-track"><span style={{ width: `${progressPercent(project)}%` }} /></div><footer><span>Updated {dateLabel(project.updated_at)}</span><ArrowUpRight size={17} /></footer></div></a>;
+  }
+  const navigation = [{ id: "overview" as Tab, icon: LayoutDashboard }, { id: "projects" as Tab, icon: FolderKanban }, ...(manageClients ? [{ id: "clients" as Tab, icon: Building2 }] : []), ...(isAdmin ? [{ id: "users" as Tab, icon: UsersRound }] : []), ...(uploadProjects.length || isAdmin ? [{ id: "import" as Tab, icon: CloudUpload }] : [])];
+  return <main className="saas-workspace">
+    <a className="skip-link" href="#workspace-content">Skip to content</a>
+    {mobileNav && <button className="nav-backdrop" aria-label="Close navigation" onClick={() => setMobileNav(false)} />}
+    <aside role={mobileNav ? "dialog" : undefined} aria-modal={mobileNav || undefined} aria-label="Workspace navigation" className={`workspace-sidebar ${mobileNav ? "is-open" : ""}`}><button className="mobile-nav-close" aria-label="Close navigation" onClick={() => setMobileNav(false)}><X size={20} /></button><a className="workspace-brand" href={isAdmin ? "/admin" : "/portal"}><img src="/powertek-logo.svg" alt="Powertek Utility Services" /></a><div className="workspace-switcher"><span className="workspace-avatar">P</span><div><strong>Powertek workspace</strong><small>{isAdmin ? "Administration" : data.user.role === "staff" ? "Internal operations" : "Client workspace"}</small></div><ShieldCheck size={16} /></div><p className="nav-section-label">WORKSPACE</p><nav aria-label="Workspace navigation">{navigation.map(({ id, icon: Icon }) => <button key={id} className={tab === id ? "active" : ""} aria-current={tab === id ? "page" : undefined} onClick={() => navigate(id)}><Icon size={18} /><span>{tabNames[id]}</span>{id === "projects" && <small>{data.projects.length}</small>}</button>)}</nav><div className="sidebar-bottom"><div className="private-workspace"><ShieldCheck size={18} /><strong>Built for trusted teams</strong><p>Invite-only access.<br />Projects stay private.</p></div><div className="sidebar-account"><span className="person-avatar">{data.user.displayName?.slice(0, 1) || "P"}</span><div><strong>{data.user.displayName}</strong><small>{data.user.role === "staff" ? "Internal team" : data.user.role === "admin" ? "Administrator" : "Client"}</small></div>{onSignOut ? <button aria-label="Sign out" onClick={onSignOut}><LogOut size={17} /></button> : <a href={signOutPath} aria-label="Sign out"><LogOut size={17} /></a>}</div></div></aside>
+    <div className="workspace-body"><header className="workspace-topbar"><div><button className="mobile-menu icon-button" aria-label="Open navigation" aria-expanded={mobileNav} onClick={() => setMobileNav(!mobileNav)}><Menu size={20} /></button><span>Workspace</span><ChevronRight size={14} /><strong>{tabNames[tab]}</strong></div><div className="topbar-actions"><span className="invite-only-label"><ShieldCheck size={14} /> Invite only</span><ThemeControl /><span className="topbar-avatar">{data.user.displayName?.slice(0, 1) || "P"}</span></div></header>
+    <section className="workspace-content" id="workspace-content"><div className="workspace-heading"><div><p className="eyebrow">{isAdmin ? "OPERATIONS CONTROL CENTER" : "YOUR CONNECTED WORKSPACE"}</p><h1>{tab === "overview" ? "A clearer view of everything." : tabNames[tab]}</h1><p>{descriptions[tab]}</p></div><div className="heading-actions"><button className="workspace-button secondary" onClick={() => void load()} disabled={loading} aria-label="Refresh workspace"><RefreshCw size={16} className={loading ? "spin" : ""} /><span>Refresh</span></button>{isAdmin && <button className="workspace-button primary" onClick={() => { navigate("users"); setUserForm(blankUser); setEditingUser(false); }}><MailPlus size={17} />Invite people</button>}</div></div>
+    {error && <div className="workspace-alert error" role="alert"><span>{error}</span><button aria-label="Dismiss error" onClick={() => setError("")}><X size={17} /></button></div>}{notice && <div className="workspace-alert success" role="status"><Check size={17} /><span>{notice}</span></div>}
+    {(tab === "overview" || tab === "projects") && <><div className="workspace-filterbar"><label className="workspace-search"><Search size={17} /><input aria-label="Search projects" placeholder="Search projects, clients or locations…" value={filters.query} onChange={(event) => setFilters({ ...filters, query: event.target.value })} /></label><label className="sr-only" htmlFor="client-filter">Filter by client</label><select id="client-filter" value={filters.clientId} onChange={(event) => setFilters({ ...filters, clientId: event.target.value })}><option value="all">All clients</option>{clientOptions.map(([id, name]) => <option value={id} key={id}>{name}</option>)}</select><button className={`workspace-button secondary ${advanced ? "selected" : ""}`} aria-expanded={advanced} onClick={() => setAdvanced(!advanced)}><SlidersHorizontal size={16} />Filters{hasFilters && <i className="filter-dot" />}</button>{hasFilters && <button className="text-button" onClick={() => setFilters(defaultFilters)}>Clear</button>}</div>{advanced && <div className="advanced-filters"><label>Project status<select value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}><option value="all">All statuses</option>{statusOptions.map((status) => <option key={status} value={status}>{status}</option>)}</select></label><label>Survey progress<select value={filters.progress} onChange={(e) => setFilters({ ...filters, progress: e.target.value })}><option value="all">All progress</option><option value="not_started">Not started</option><option value="in_progress">In progress</option><option value="complete">Complete</option></select></label><label>Updated from<input type="date" value={filters.updatedAfter} max={filters.updatedBefore || undefined} onChange={(e) => setFilters({ ...filters, updatedAfter: e.target.value })} /></label><label>Updated through<input type="date" value={filters.updatedBefore} min={filters.updatedAfter || undefined} onChange={(e) => setFilters({ ...filters, updatedBefore: e.target.value })} /></label></div>}</>}
+    {loading ? <div className="workspace-skeleton" aria-label="Loading workspace" aria-busy="true">{[0,1,2,3].map((i) => <div key={i} />)}<p>Loading your workspace…</p></div> : <>
+    {tab === "overview" && <><div className="overview-metrics"><Metric label="Projects in view" value={totals.projects} detail={`${new Set(filteredProjects.map((p) => p.client_id)).size} clients`} icon={<FolderKanban size={20} />} /><Metric label="Pole locations" value={totals.poles.toLocaleString()} detail="Across filtered projects" icon={<MapPinned size={20} />} /><Metric label="Survey completion" value={`${totals.progress}%`} detail={`${totals.complete.toLocaleString()} of ${totals.poles.toLocaleString()} poles`} icon={<Gauge size={20} />} /><Metric label="Measurements" value={totals.attachments.toLocaleString()} detail="Captured attachment points" icon={<SlidersHorizontal size={20} />} /></div><div className="overview-panels"><section className="workspace-panel progress-panel"><div className="panel-title"><div><p className="eyebrow">PORTFOLIO HEALTH</p><h2>From field to finished</h2></div><span className="subtle-badge">Current snapshot</span></div><div className="progress-summary"><div className="completion-ring" style={{ background: `conic-gradient(var(--brand-orange) ${totals.progress}%, var(--workspace-line) 0)` }}><div><strong>{totals.progress}%</strong><span>complete</span></div></div><div><h3>{totals.poles ? `${totals.remaining.toLocaleString()} poles to complete` : "Your next survey starts here"}</h3><p>Track completed and remaining poles across the projects in view.</p><div className="progress-legend"><span><i />Complete <strong>{totals.complete.toLocaleString()}</strong></span><span><i />Remaining <strong>{totals.remaining.toLocaleString()}</strong></span></div></div></div><button className="text-button" onClick={() => navigate("projects")}>Explore projects <ArrowUpRight size={16} /></button></section><section className="workspace-panel client-progress"><div className="panel-title"><div><p className="eyebrow">CLIENT PORTFOLIO</p><h2>Progress by client</h2></div><Building2 size={20} /></div>{clientOptions.filter(([id]) => filteredProjects.some((p) => p.client_id === id)).map(([id, name]) => { const summary = summarizeProjects(filteredProjects.filter((p) => p.client_id === id)); return <button key={id} className="client-progress-row" onClick={() => { setFilters({ ...filters, clientId: id }); navigate("projects"); }}><div><span>{name}</span><strong>{summary.progress}%</strong></div><div className="progress-track"><span style={{ width: `${summary.progress}%` }} /></div><small>{summary.projects} projects · {summary.poles.toLocaleString()} poles</small></button>; })}{!filteredProjects.length && <p className="empty-copy">Client progress appears when projects are available.</p>}</section></div><section className="workspace-panel"><div className="panel-title"><div><p className="eyebrow">PROJECT PULSE</p><h2>Projects at a glance</h2></div><button className="workspace-button secondary" disabled={!filteredProjects.length} onClick={exportSummary}><ArrowDownToLine size={16} />Export summary</button></div><div className="project-table-wrap"><table className="workspace-table"><thead><tr><th>Project</th><th>Client</th><th>Poles</th><th>Completion</th><th>Updated</th><th><span className="sr-only">Open</span></th></tr></thead><tbody>{filteredProjects.slice(0, 8).map((project) => <tr key={project.id}><td><a href={`/projects/${encodeURIComponent(project.id)}`}><strong>{project.name}</strong><small>{project.code}</small></a></td><td>{project.client_name}</td><td>{project.pole_count.toLocaleString()}</td><td><span className="table-progress"><span className="progress-track"><span style={{ width: `${progressPercent(project)}%` }} /></span>{progressPercent(project)}%</span></td><td>{dateLabel(project.updated_at)}</td><td><a aria-label={`Open ${project.name}`} href={`/projects/${encodeURIComponent(project.id)}`}><ArrowUpRight size={17} /></a></td></tr>)}</tbody></table></div>{!filteredProjects.length && <Empty title={hasFilters ? "No projects match your filters" : "Your portfolio is ready to grow"} text={hasFilters ? "Clear a filter to expand your view." : isAdmin ? "Create a client workspace, then add its first project." : "Your administrator will assign projects here."} />}{filteredProjects.length > 8 && <button className="text-button" onClick={() => navigate("projects")}>View all {filteredProjects.length} projects <ChevronRight size={16} /></button>}</section></>}
+    {tab === "projects" && <><div className="section-toolbar"><span><strong>{filteredProjects.length}</strong> projects{hasFilters ? " matching your filters" : " in your workspace"}</span><div><select aria-label="Sort projects" value={filters.sort} onChange={(e) => setFilters({ ...filters, sort: e.target.value })}><option value="recent">Recently updated</option><option value="name">Project name</option><option value="progress">Highest completion</option></select><div className="view-switch"><button aria-label="Grid view" aria-pressed={view === "grid"} onClick={() => setView("grid")}><LayoutGrid size={17} /></button><button aria-label="List view" aria-pressed={view === "list"} onClick={() => setView("list")}><List size={17} /></button></div>{isAdmin && <button className="workspace-button primary" onClick={() => setShowProjectForm(!showProjectForm)}><Plus size={16} />New project</button>}</div></div>{showProjectForm && isAdmin && <ProjectForm clients={data.clients} form={projectForm} onChange={setProjectForm} saving={saving} onSubmit={(e) => void save(e, "project")} onClose={() => setShowProjectForm(false)} />}<div className={`workspace-project-grid ${view === "list" ? "list-view" : ""}`}>{filteredProjects.map((project) => <ProjectCard key={project.id} project={project} />)}</div>{!filteredProjects.length && <Empty title={hasFilters ? "No matching projects" : "A home for your next project"} text={isAdmin ? "Add a client, create a project, then upload your survey data." : "Ask your administrator to assign a project to your account."} />}</>}
+    {tab === "clients" && manageClients && <><div className="client-portfolio-grid">{data.clients.map((client) => { const projects = data.projects.filter((p) => p.client_id === client.id); const summary = summarizeProjects(projects); return <article className="workspace-panel client-portfolio-card" key={client.id}><div className="client-card-heading"><span className="client-avatar">{client.name.slice(0, 2).toUpperCase()}</span><span className="status-badge active">{client.status}</span></div><h2>{client.name}</h2><p>{client.code}</p><div className="client-card-stats"><span><strong>{client.project_count}</strong>Projects</span><span><strong>{summary.poles.toLocaleString()}</strong>Visible poles</span></div><div className="progress-caption"><span>Visible survey completion</span><strong>{summary.progress}%</strong></div><div className="progress-track"><span style={{ width: `${summary.progress}%` }} /></div><button className="text-button" onClick={() => { setFilters({ ...defaultFilters, clientId: client.id }); navigate("projects"); }}>Open client projects <ArrowUpRight size={16} /></button></article>; })}</div><section className="workspace-panel create-client-panel"><div><p className="eyebrow">GROW YOUR PORTFOLIO</p><h2>Add a client workspace</h2><p>Keep each client’s projects and access clearly separated.</p></div><form className="workspace-form" onSubmit={(e) => void save(e, "client")}><label>Client name<input required value={clientForm.name} onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })} placeholder="Client company name" /></label><label>Client code<input value={clientForm.code} onChange={(e) => setClientForm({ ...clientForm, code: e.target.value })} placeholder="e.g. NLU" /></label><button className="workspace-button primary" disabled={saving}><Plus size={16} />{saving ? "Creating…" : "Create client"}</button></form></section></>}
+    {tab === "users" && isAdmin && <div className="people-layout"><section className="workspace-panel" id="user-access-form"><div className="panel-title"><div><p className="eyebrow">TRUSTED ACCESS</p><h2>{editingUser ? "Manage permissions" : "Invite someone new"}</h2></div><MailPlus size={22} /></div><p className="panel-description">{editingUser ? "Update assigned projects and capabilities. Send another invitation only if the person has not yet registered." : "They’ll receive a private email link to choose a password and open their assigned workspace."}</p><form className="workspace-form" onSubmit={(e) => void save(e, "user", !editingUser)}><label>Full name<input required value={userForm.displayName} onChange={(e) => setUserForm({ ...userForm, displayName: e.target.value })} placeholder="Full name" /></label><label>Work email<input type="email" required readOnly={editingUser} value={userForm.email} onChange={(e) => setUserForm({ ...userForm, email: e.target.value })} placeholder="name@company.com" /></label><label>Workspace role<select value={userForm.role} onChange={(e) => setUserForm({ ...userForm, role: e.target.value, manageClients: false, assignments: e.target.value === "admin" ? [] : userForm.assignments.map((a) => ({ ...a, canUpload: false })) })}><option value="client">Client · view assigned projects</option><option value="staff">Internal team · custom permissions</option><option value="admin">Administrator · full access</option></select></label>{userForm.role === "admin" ? <div className="permission-note"><ShieldCheck size={17} />Administrators can manage all clients, projects, people, and uploads.</div> : <fieldset className="project-assignments"><legend>Assigned projects</legend><p>Viewing is included for each assigned project.</p>{data.projects.map((project) => { const assignment = userForm.assignments.find((a) => a.projectId === project.id); return <div className="assignment-row" key={project.id}><label><input type="checkbox" checked={Boolean(assignment)} onChange={(e) => setUserForm({ ...userForm, assignments: e.target.checked ? [...userForm.assignments, { projectId: project.id, canUpload: false }] : userForm.assignments.filter((a) => a.projectId !== project.id) })} /><span><strong>{project.name}</strong><small>{project.client_name}</small></span></label>{userForm.role === "staff" && <label className="upload-permission"><input type="checkbox" disabled={!assignment} checked={assignment?.canUpload || false} onChange={(e) => setUserForm({ ...userForm, assignments: userForm.assignments.map((a) => a.projectId === project.id ? { ...a, canUpload: e.target.checked } : a) })} />Upload / edit</label>}</div>; })}{!data.projects.length && <p>Create a project before inviting a client.</p>}</fieldset>}{userForm.role === "staff" && <label className="permission-checkbox"><input type="checkbox" checked={userForm.manageClients} onChange={(e) => setUserForm({ ...userForm, manageClients: e.target.checked })} /><span><strong>Manage clients</strong><small>View the client directory and create client workspaces. Project access still requires assignment.</small></span></label>}<button className="workspace-button primary" disabled={saving || (userForm.role === "client" && !userForm.assignments.length)}>{saving ? <RefreshCw size={16} className="spin" /> : editingUser ? <ShieldCheck size={16} /> : <MailPlus size={16} />}{saving ? "Saving…" : editingUser ? "Save permissions" : "Send invitation"}</button>{editingUser && <div className="edit-user-actions"><button type="button" className="workspace-button secondary" disabled={saving} onClick={(e) => void save(e, "user", true)}>Send invitation email</button><button type="button" className="text-button" onClick={() => { setUserForm(blankUser); setEditingUser(false); }}>Cancel edit</button></div>}</form></section><section className="workspace-panel people-directory"><div className="panel-title"><div><p className="eyebrow">YOUR PEOPLE</p><h2>Workspace directory</h2></div><span className="subtle-badge">{data.users.length} people</span></div>{data.users.map((person) => <article className="directory-person" key={person.id}><span className="person-avatar">{person.display_name.slice(0, 1)}</span><div><h3>{person.display_name}</h3><p>{person.email}</p><div className="person-tags"><span className="status-badge">{person.role === "staff" ? "Internal team" : person.role}</span><span className={`invitation-status ${person.invitation_status}`}>{person.invitation_status || "pending"}</span>{person.status !== "active" && <span className="status-badge">{person.status}</span>}</div><small>{person.role === "admin" ? "All projects and permissions" : person.project_names || "No projects assigned"}</small></div><button className="text-button" onClick={() => editUser(person)} aria-label={`Manage ${person.display_name}`}>Manage</button></article>)}{!data.users.length && <Empty title="Bring your people together" text="Start with a private invitation." />}</section></div>}
+    {tab === "import" && (isAdmin || uploadProjects.length > 0) && <ImportDialog projects={uploadProjects} onComplete={async (message) => { await load(); setNotice(message); }} />}
+    </>}
+    <footer className="workspace-footer"><span>POWERTEK <i /> Field intelligence, connected.</span><span><ShieldCheck size={13} /> Private by design</span></footer></section></div>
+  </main>;
 }
-
+function Metric({ label, value, detail, icon }: { label: string; value: string | number; detail: string; icon: React.ReactNode }) { return <article className="workspace-metric"><div><span>{label}</span>{icon}</div><strong>{value}</strong><p>{detail}</p></article>; }
+function Empty({ title, text }: { title: string; text: string }) { return <div className="workspace-empty"><FolderKanban size={32} /><h3>{title}</h3><p>{text}</p></div>; }
+function ProjectForm({ clients, form, onChange, saving, onSubmit, onClose }: { clients: ClientRow[]; form: { clientId: string; name: string; code: string; locationLabel: string }; onChange: (form: { clientId: string; name: string; code: string; locationLabel: string }) => void; saving: boolean; onSubmit: (event: React.FormEvent) => void; onClose: () => void }) {
+  return <section className="workspace-panel"><div className="panel-title"><h2>Create a project</h2><button className="icon-button" aria-label="Close project form" onClick={onClose}><X size={18} /></button></div><form className="workspace-form project-form-grid" onSubmit={onSubmit}><label>Client<select required value={form.clientId} onChange={(e) => onChange({ ...form, clientId: e.target.value })}><option value="">Choose a client</option>{clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label><label>Project name<input required value={form.name} onChange={(e) => onChange({ ...form, name: e.target.value })} placeholder="Survey project name" /></label><label>Project code<input value={form.code} onChange={(e) => onChange({ ...form, code: e.target.value })} placeholder="e.g. FN-2026" /></label><label>Location<input value={form.locationLabel} onChange={(e) => onChange({ ...form, locationLabel: e.target.value })} placeholder="City, region" /></label><button className="workspace-button primary" disabled={saving || !clients.length}><Plus size={16} />{saving ? "Creating…" : "Create project"}</button>{!clients.length && <p>Create a client workspace first.</p>}</form></section>;
+}

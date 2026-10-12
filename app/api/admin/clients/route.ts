@@ -1,8 +1,8 @@
-import { authErrorResponse, requirePortalUser } from "@/lib/supabase";
+import { authErrorResponse, requireClientManager } from "@/lib/supabase";
 
 export async function POST(request: Request) {
   try {
-    const { client } = await requirePortalUser(request, true);
+    const { client } = await requireClientManager(request);
     const body = await request.json() as { name?: string; code?: string };
     const name = String(body.name ?? "").trim();
     const code = String(body.code ?? name).toUpperCase().replace(/[^A-Z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 32);

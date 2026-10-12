@@ -4,11 +4,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { AttachmentRecord, PoleRecord, PortalUser } from "@/lib/portal-types";
+import { ThemeControl } from "@/components/theme-control";
 import { authenticatedFetch } from "@/lib/supabase";
 import {
   ArrowLeft, CircleUserRound, Crosshair, Download, ExternalLink,
   FileArchive, Focus, Image as ImageIcon, Layers3, ListFilter, LoaderCircle, LocateFixed,
-  LogOut, Map as MapIcon, Maximize2, Minus, Plus, Ruler, Search, SplitSquareVertical,
+  LogOut, Map as MapIcon, Maximize2, Menu, Minus, Plus, Ruler, Search, SplitSquareVertical,
 } from "lucide-react";
 
 type ProjectInfo = { id: string; name: string; code: string; description: string; location_label: string; status: string; client_id: string; client_name: string; client_code: string };
@@ -60,6 +61,7 @@ function reportHtml(project: ProjectInfo, pole: PoleRecord) {
 
 export function ProjectViewer({ projectId, user, signOutPath, onSignOut }: { projectId: string; user: PortalUser; signOutPath: string; onSignOut?: () => void }) {
   const [data, setData] = useState<ProjectPayload | null>(null);
+  const [polesOpen, setPolesOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string>("");
   const [view, setView] = useState<ViewName>("map");
   const [query, setQuery] = useState("");
@@ -76,7 +78,7 @@ export function ProjectViewer({ projectId, user, signOutPath, onSignOut }: { pro
     return match && status;
   }), [data, query, filter]);
 
-  const selectPole = useCallback((pole: PoleRecord, nextView?: ViewName) => { setSelectedId(pole.id); setFocusAttachment(null); if (nextView) setView(nextView); }, []);
+  const selectPole = useCallback((pole: PoleRecord, nextView?: ViewName) => { setSelectedId(pole.id); setPolesOpen(false); setFocusAttachment(null); if (nextView) setView(nextView); }, []);
   const locateAttachment = useCallback((attachment: AttachmentRecord) => { setFocusAttachment(attachment); setView("split"); }, []);
 
   useEffect(() => {
@@ -139,12 +141,13 @@ export function ProjectViewer({ projectId, user, signOutPath, onSignOut }: { pro
     finally { setExporting(""); }
   }
 
-  if (!data) return <main className="viewer-loading"><LoaderCircle className="spin" /><p>{error || "Loading secure pole workspace…"}</p><Link href="/">Return to projects</Link></main>;
-  return <main className="viewer-shell">
-    <header className="viewer-header"><Brand /><div className="viewer-project-title"><Link href="/"><ArrowLeft /> Projects</Link><span /><p><small>{data.project.client_name}</small><strong>{data.project.name}</strong></p></div><div className="viewer-actions"><button className="download-button" onClick={() => void downloadAll()} disabled={Boolean(exporting)}>{exporting ? <LoaderCircle className="spin" /> : <FileArchive />}<span>{exporting || "Download all poles"}</span></button><span className="viewer-account"><CircleUserRound /><span><strong>{user.displayName}</strong><small>{user.role}</small></span></span>{onSignOut ? <button className="icon-button" onClick={onSignOut} aria-label="Sign out"><LogOut /></button> : <a className="icon-button" href={signOutPath}><LogOut /></a>}</div></header>
+  if (!data) return <main className="viewer-loading"><LoaderCircle className="spin" /><p>{error || "Loading secure pole workspace…"}</p><Link href={user.role === "admin" ? "/admin" : "/portal"}>Return to projects</Link></main>;
+  return <main className={`viewer-shell ${polesOpen ? "poles-open" : ""}`}>
+    <header className="viewer-header"><button className="viewer-pole-toggle" aria-label={polesOpen ? "Close pole list" : "Open pole list"} aria-expanded={polesOpen} onClick={() => setPolesOpen(!polesOpen)}><Menu size={18} /></button><Brand /><div className="viewer-project-title"><Link href={user.role === "admin" ? "/admin" : "/portal"}><ArrowLeft /> Projects</Link><span /><p><small>{data.project.client_name}</small><strong>{data.project.name}</strong></p></div><div className="viewer-actions"><ThemeControl /><button className="download-button" onClick={() => void downloadAll()} disabled={Boolean(exporting)}>{exporting ? <LoaderCircle className="spin" /> : <FileArchive />}<span>{exporting || "Download all poles"}</span></button><span className="viewer-account"><CircleUserRound /><span><strong>{user.displayName}</strong><small>{user.role}</small></span></span>{onSignOut ? <button className="icon-button" onClick={onSignOut} aria-label="Sign out"><LogOut /></button> : <a className="icon-button" href={signOutPath}><LogOut /></a>}</div></header>
     {error && <div className="viewer-error">{error}<button onClick={() => setError("")}>×</button></div>}
+    {polesOpen && <button className="viewer-poles-backdrop" aria-label="Close pole list" onClick={() => setPolesOpen(false)} />}
     <div className="viewer-layout">
-      <aside className="pole-sidebar"><div className="pole-search"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search pole ID or attachment" /></div><div className="pole-filters"><button onClick={() => setFilter("all")} className={filter === "all" ? "active" : ""}>All</button><button onClick={() => setFilter("complete")} className={filter === "complete" ? "active" : ""}>Complete</button><button onClick={() => setFilter("location")} className={filter === "location" ? "active" : ""}>Location only</button></div><div className="pole-list scrollbar-thin">{visiblePoles.map((pole, index) => <button key={pole.id} className={pole.id === selected?.id ? "selected" : ""} onClick={() => selectPole(pole)}><span className="pole-index">{String(index + 1).padStart(2, "0")}</span><p><strong>{pole.poleName}</strong><small>{pole.attachments.length} attachments • top {meters(pole.topHeightM)}</small></p><i className={pole.status === "complete" ? "complete" : "location"} /></button>)}</div><footer><span>{visiblePoles.length} records shown</span><button><ListFilter /> Filter</button></footer></aside>
+      <aside className="pole-sidebar"><div className="pole-search"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search poles" placeholder="Search pole ID or attachment" /></div><div className="pole-filters"><button onClick={() => setFilter("all")} className={filter === "all" ? "active" : ""}>All</button><button onClick={() => setFilter("complete")} className={filter === "complete" ? "active" : ""}>Complete</button><button onClick={() => setFilter("location")} className={filter === "location" ? "active" : ""}>Location only</button></div><div className="pole-list scrollbar-thin">{visiblePoles.map((pole, index) => <button key={pole.id} className={pole.id === selected?.id ? "selected" : ""} onClick={() => selectPole(pole)}><span className="pole-index">{String(index + 1).padStart(2, "0")}</span><p><strong>{pole.poleName}</strong><small>{pole.attachments.length} attachments • top {meters(pole.topHeightM)}</small></p><i className={pole.status === "complete" ? "complete" : "location"} /></button>)}</div><footer><span>{visiblePoles.length} records shown</span><button><ListFilter /> Filter</button></footer></aside>
       <section className="viewer-main"><nav className="view-tabs"><button className={view === "map" ? "active" : ""} onClick={() => setView("map")}><MapIcon /> Satellite map</button><button className={view === "split" ? "active" : ""} onClick={() => setView("split")}><SplitSquareVertical /> Photo + model</button><button className={view === "photo" ? "active" : ""} onClick={() => setView("photo")}><ImageIcon /> Photo</button><button className={view === "profile" ? "active" : ""} onClick={() => setView("profile")}><Layers3 /> SPIDA profile</button><span className="view-quality"><i /> Original-quality zoom</span></nav>
         {view === "map" && <SatelliteMap poles={data.poles} selected={selected} onSelect={selectPole} onOpen={(pole) => selectPole(pole, "split")} project={data.project} />}
         {selected && view === "split" && <div className="split-view"><PanelHeader eyebrow="FIELD IMAGE" title="Measured pole" trailing={selected.imageFilename || "No image"} /><PanelHeader eyebrow="ENGINEERING PROFILE" title="SPIDA-style measured model" trailing={`TOP ${meters(selected.topHeightM)}`} /><PhotoZoom pole={selected} projectId={projectId} focusAttachment={focusAttachment} /><ModelZoom pole={selected} focusAttachment={focusAttachment} /></div>}

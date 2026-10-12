@@ -1,4 +1,4 @@
-import { authErrorResponse, requirePortalUser } from "@/lib/supabase";
+import { authErrorResponse, requireProjectEditor } from "@/lib/supabase";
 import type { ImportPole } from "@/lib/portal-types";
 
 type Context = { params: Promise<{ projectId: string }> };
@@ -8,8 +8,8 @@ function kind(name: string) { const value = name.toUpperCase(); if (/TRANSFORMER
 
 export async function POST(request: Request, context: Context) {
   try {
-    const { client } = await requirePortalUser(request, true);
     const { projectId } = await context.params;
+    const { client } = await requireProjectEditor(request, projectId);
     const body = await request.json() as { poles?: ImportPole[]; sourceName?: string };
     if (!Array.isArray(body.poles) || !body.poles.length) return Response.json({ error: "No valid pole records were found in the upload" }, { status: 400 });
     if (body.poles.length > 5000) return Response.json({ error: "A single import is limited to 5,000 poles" }, { status: 413 });
@@ -51,7 +51,8 @@ export async function POST(request: Request, context: Context) {
       const inserted = await client.from("attachments").insert(attachments.slice(i, i + 250));
       if (inserted.error) throw inserted.error;
     }
-    await client.from("projects").update({ updated_at: timestamp }).eq("id", projectId);
+    const updated = await client.rpc("touch_portal_project", { p_project_id: projectId });
+    if (updated.error) throw updated.error;
     return Response.json({ importedPoles: rows.length, importedAttachments: attachments.length, sourceName: body.sourceName ?? null });
   } catch (error) { return authErrorResponse(error); }
 }
