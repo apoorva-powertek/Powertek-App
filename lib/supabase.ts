@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
+import { canManageClients } from "@/lib/access";
 import type { PortalUser } from "@/lib/portal-types";
 
 // These are public browser credentials. RLS and confirmed Supabase Auth sessions
@@ -36,16 +37,15 @@ export async function requirePortalUser(request: Request, admin = false): Promis
   const { data: authData, error: authError } = await client.auth.getUser(token);
   if (authError || !authData.user || !authData.user.email_confirmed_at) throw new PortalAuthError("Your sign-in session is invalid or your email is not confirmed");
 
-  let result = await client.from("portal_users").select("id,email,display_name,role,status").eq("supabase_user_id", authData.user.id).eq("status", "active").maybeSingle();
+  let result = await client.from("portal_users").select("id,email,display_name,role,status,permissions").eq("supabase_user_id", authData.user.id).eq("status", "active").maybeSingle();
   if (!result.data && !result.error) {
     const linked = await client.rpc("link_current_portal_user");
     if (linked.error) throw new PortalAuthError("Portal access has not been assigned to this account", 403);
-    const profile = Array.isArray(linked.data) ? linked.data[0] : linked.data;
-    result = { data: profile ?? null, error: null } as typeof result;
+    result = await client.from("portal_users").select("id,email,display_name,role,status,permissions").eq("supabase_user_id", authData.user.id).eq("status", "active").maybeSingle();
   }
   if (result.error) throw result.error;
   if (!result.data || result.data.status !== "active") throw new PortalAuthError("Portal access has not been assigned to this account", 403);
-  const user: PortalUser = { id: result.data.id, authUserId: authData.user.id, email: result.data.email, displayName: result.data.display_name, role: result.data.role, status: result.data.status };
+  const user: PortalUser = { id: result.data.id, authUserId: authData.user.id, email: result.data.email, displayName: result.data.display_name, role: result.data.role, status: result.data.status, permissions: { manageClients: result.data.permissions?.manageClients === true } };
   if (admin && user.role !== "admin") throw new PortalAuthError("Administrator access required", 403);
   return { client, authUser: authData.user, user };
 }
@@ -56,3 +56,18 @@ export function authErrorResponse(error: unknown): Response {
   return Response.json({ error: "The portal service is temporarily unavailable" }, { status: 503 });
 }
 
+
+export async function requireClientManager(request: Request) {
+  const access = await requirePortalUser(request);
+  if (!canManageClients(access.user)) throw new PortalAuthError("Client management permission required", 403);
+  return access;
+}
+export async function requireProjectEditor(request: Request, projectId: string) {
+  const access = await requirePortalUser(request);
+  if (access.user.role === "admin") return access;
+  if (access.user.role !== "staff") throw new PortalAuthError("Project upload permission required", 403);
+  const assignment = await access.client.from("user_projects").select("can_upload").eq("user_id", access.user.id).eq("project_id", projectId).maybeSingle();
+  if (assignment.error) throw assignment.error;
+  if (!assignment.data?.can_upload) throw new PortalAuthError("Project upload permission required", 403);
+  return access;
+}

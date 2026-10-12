@@ -1,4 +1,4 @@
-import { authErrorResponse, requirePortalUser } from "@/lib/supabase";
+import { authErrorResponse, requireProjectEditor } from "@/lib/supabase";
 
 type Context = { params: Promise<{ projectId: string }> };
 const safeFilename = (value: string) => value.replace(/[\\/\u0000-\u001f]/g, "_").replace(/\s+/g, " ").trim().slice(0, 180) || "file";
@@ -6,8 +6,8 @@ const normalize = (value: string) => value.toUpperCase().replace(/\.[A-Z0-9]+$/i
 
 export async function PUT(request: Request, context: Context) {
   try {
-    const { client } = await requirePortalUser(request, true);
     const { projectId } = await context.params;
+    const { client } = await requireProjectEditor(request, projectId);
     const url = new URL(request.url);
     const kind = url.searchParams.get("kind") ?? "";
     const filename = safeFilename(url.searchParams.get("filename") ?? "file");
@@ -26,6 +26,7 @@ export async function PUT(request: Request, context: Context) {
     }
     const objectKey = `${projectId}/${kind}/${crypto.randomUUID()}-${filename}`;
     const bytes = await request.arrayBuffer();
+    if (bytes.byteLength > 524288000) return Response.json({ error: "Files must be smaller than 500 MB" }, { status: 413 });
     const contentType = request.headers.get("content-type") || "application/octet-stream";
     const upload = await client.storage.from("project-files").upload(objectKey, bytes, { contentType, upsert: false });
     if (upload.error) throw upload.error;
@@ -36,6 +37,8 @@ export async function PUT(request: Request, context: Context) {
       const image = await client.from("poles").update({ image_key: objectKey, image_filename: filename, status: "complete", updated_at: new Date().toISOString() }).eq("id", pole.id).eq("project_id", projectId);
       if (image.error) throw image.error;
     }
+    const touched = await client.rpc("touch_portal_project", { p_project_id: projectId });
+    if (touched.error) throw touched.error;
     return Response.json({ id, filename, poleMatched: Boolean(pole) }, { status: 201 });
   } catch (error) { return authErrorResponse(error); }
 }

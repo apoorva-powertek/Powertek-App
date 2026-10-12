@@ -1,5 +1,6 @@
 "use client";
 
+import { ThemeControl } from "@/components/theme-control";
 import Image from "next/image";
 import { ArrowUpRight, LockKeyhole, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -29,6 +30,7 @@ export function MarketingHeader({ portalSignInUrl }: { portalSignInUrl: string }
       <nav className="desktop-navigation" aria-label="Main navigation">
         {navigation.map((item) => <a key={item.href} href={item.href}>{item.label}</a>)}
       </nav>
+      <ThemeControl />
       <a className="brand-button navy header-sign-in" href={portalSignInUrl}><LockKeyhole size={15} /> Client sign in <ArrowUpRight size={16} /></a>
       <button
         className="mobile-menu-toggle"

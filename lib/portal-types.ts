@@ -1,4 +1,4 @@
-export type PortalRole = "admin" | "client";
+export type PortalRole = "admin" | "staff" | "client";
 
 export type PortalUser = {
   id: string;
@@ -7,6 +7,7 @@ export type PortalUser = {
   displayName: string;
   role: PortalRole;
   status: "active" | "disabled";
+  permissions?: { manageClients: boolean };
 };
 
 export type AttachmentRecord = {

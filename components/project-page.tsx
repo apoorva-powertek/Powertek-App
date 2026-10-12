@@ -25,7 +25,7 @@ export function ProjectPage({ projectId }: { projectId: string }) {
       if (active) setReady(true);
     }
     void supabase.auth.getSession().then(({ data }) => resolve(data.session));
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, next) => { void resolve(next); });
+    const { data: listener } = supabase.auth.onAuthStateChange((event, next) => { if (event !== "INITIAL_SESSION" && event !== "TOKEN_REFRESHED") window.setTimeout(() => { if (active) void resolve(next); }, 0); });
     return () => { active = false; listener.subscription.unsubscribe(); };
   }, []);
   async function signOut() { await createBrowserSupabase().auth.signOut(); router.replace("/portal"); }

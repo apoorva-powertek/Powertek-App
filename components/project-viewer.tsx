@@ -1,15 +1,16 @@
 "use client";
+import Image from "next/image";
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import type { AttachmentRecord, PoleRecord, PortalUser } from "@/lib/portal-types";
+import { ThemeControl } from "@/components/theme-control";
 import { authenticatedFetch } from "@/lib/supabase";
 import {
   ArrowLeft, CircleUserRound, Crosshair, Download, ExternalLink,
   FileArchive, Focus, Image as ImageIcon, Layers3, ListFilter, LoaderCircle, LocateFixed,
-  LogOut, Map as MapIcon, Maximize2, Minus, Plus, Ruler, Search, SplitSquareVertical,
+  LogOut, Map as MapIcon, Maximize2, Menu, Minus, Plus, Ruler, Search, SplitSquareVertical,
 } from "lucide-react";
 
 type ProjectInfo = { id: string; name: string; code: string; description: string; location_label: string; status: string; client_id: string; client_name: string; client_code: string };
@@ -17,6 +18,7 @@ type ProjectPayload = { project: ProjectInfo; poles: PoleRecord[] };
 type ViewName = "map" | "split" | "photo" | "profile";
 
 function Brand() { return <div className="portal-brand compact"><Image src="/powertek-logo.svg" alt="Powertek Utility Services" width={362} height={108} priority /></div>; }
+function projectImageUrl(projectId: string, poleId: string) { return `/api/projects/${encodeURIComponent(projectId)}/poles/${encodeURIComponent(poleId)}/image`; }
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 const meters = (value: number | null | undefined, digits = 2) => value == null ? "—" : `${Number(value).toFixed(digits)} m`;
 const safeName = (value: string) => value.replace(/[^a-z0-9_-]+/gi, "_").replace(/^_+|_+$/g, "") || "pole";
@@ -61,6 +63,7 @@ function reportHtml(project: ProjectInfo, pole: PoleRecord) {
 
 export function ProjectViewer({ projectId, user, signOutPath, onSignOut }: { projectId: string; user: PortalUser; signOutPath: string; onSignOut?: () => void }) {
   const [data, setData] = useState<ProjectPayload | null>(null);
+  const [polesOpen, setPolesOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string>("");
   const [view, setView] = useState<ViewName>("map");
   const [query, setQuery] = useState("");
@@ -77,7 +80,7 @@ export function ProjectViewer({ projectId, user, signOutPath, onSignOut }: { pro
     return match && status;
   }), [data, query, filter]);
 
-  const selectPole = useCallback((pole: PoleRecord, nextView?: ViewName) => { setSelectedId(pole.id); setFocusAttachment(null); if (nextView) setView(nextView); }, []);
+  const selectPole = useCallback((pole: PoleRecord, nextView?: ViewName) => { setSelectedId(pole.id); setPolesOpen(false); setFocusAttachment(null); if (nextView) setView(nextView); }, []);
   const locateAttachment = useCallback((attachment: AttachmentRecord) => { setFocusAttachment(attachment); setView("split"); }, []);
 
   useEffect(() => {
@@ -110,7 +113,7 @@ export function ProjectViewer({ projectId, user, signOutPath, onSignOut }: { pro
         [`${safeName(pole.poleName)}_report.html`]: strToU8(reportHtml(data.project, pole)),
       };
       if (pole.imageFilename) {
-        const response = await authenticatedFetch(`/api/projects/${projectId}/poles/${pole.id}/image`);
+        const response = await authenticatedFetch(projectImageUrl(projectId, pole.id));
         if (response.ok) files[`original_photo/${safeName(pole.imageFilename)}`] = new Uint8Array(await response.arrayBuffer());
       }
       downloadBlob(new Blob([zipSync(files, { level: 0 }).buffer as ArrayBuffer], { type: "application/zip" }), `${safeName(pole.poleName)}_pole_package.zip`);
@@ -131,7 +134,7 @@ export function ProjectViewer({ projectId, user, signOutPath, onSignOut }: { pro
         setExporting(`Collecting original photo ${index + 1} of ${data.poles.length}`);
         files[`reports/${safeName(pole.poleName)}.html`] = strToU8(reportHtml(data.project, pole));
         if (!pole.imageFilename) continue;
-        const response = await authenticatedFetch(`/api/projects/${projectId}/poles/${pole.id}/image`);
+        const response = await authenticatedFetch(projectImageUrl(projectId, pole.id));
         if (response.ok) files[`original_photos/${safeName(pole.imageFilename)}`] = new Uint8Array(await response.arrayBuffer());
       }
       setExporting("Compressing project package");
@@ -140,12 +143,13 @@ export function ProjectViewer({ projectId, user, signOutPath, onSignOut }: { pro
     finally { setExporting(""); }
   }
 
-  if (!data) return <main className="viewer-loading"><LoaderCircle className="spin" /><p>{error || "Loading secure pole workspace…"}</p><Link href="/">Return to projects</Link></main>;
-  return <main className="viewer-shell">
-    <header className="viewer-header"><Brand /><div className="viewer-project-title"><Link href="/"><ArrowLeft /> Projects</Link><span /><p><small>{data.project.client_name}</small><strong>{data.project.name}</strong></p></div><div className="viewer-actions"><button className="download-button" onClick={() => void downloadAll()} disabled={Boolean(exporting)}>{exporting ? <LoaderCircle className="spin" /> : <FileArchive />}<span>{exporting || "Download all poles"}</span></button><span className="viewer-account"><CircleUserRound /><span><strong>{user.displayName}</strong><small>{user.role}</small></span></span>{onSignOut ? <button className="icon-button" onClick={onSignOut} aria-label="Sign out"><LogOut /></button> : <a className="icon-button" href={signOutPath}><LogOut /></a>}</div></header>
+  if (!data) return <main className="viewer-loading"><LoaderCircle className="spin" /><p>{error || "Loading secure pole workspace…"}</p><Link href={user.role === "admin" ? "/admin" : "/portal"}>Return to projects</Link></main>;
+  return <main className={`viewer-shell ${polesOpen ? "poles-open" : ""}`}>
+    <header className="viewer-header"><button className="viewer-pole-toggle" aria-label={polesOpen ? "Close pole list" : "Open pole list"} aria-expanded={polesOpen} onClick={() => setPolesOpen(!polesOpen)}><Menu size={18} /></button><Brand /><div className="viewer-project-title"><Link href={user.role === "admin" ? "/admin" : "/portal"}><ArrowLeft /> Projects</Link><span /><p><small>{data.project.client_name}</small><strong>{data.project.name}</strong></p></div><div className="viewer-actions"><ThemeControl /><button className="download-button" onClick={() => void downloadAll()} disabled={Boolean(exporting)}>{exporting ? <LoaderCircle className="spin" /> : <FileArchive />}<span>{exporting || "Download all poles"}</span></button><span className="viewer-account"><CircleUserRound /><span><strong>{user.displayName}</strong><small>{user.role}</small></span></span>{onSignOut ? <button className="icon-button" onClick={onSignOut} aria-label="Sign out"><LogOut /></button> : <a className="icon-button" href={signOutPath}><LogOut /></a>}</div></header>
     {error && <div className="viewer-error">{error}<button onClick={() => setError("")}>×</button></div>}
+    {polesOpen && <button className="viewer-poles-backdrop" aria-label="Close pole list" onClick={() => setPolesOpen(false)} />}
     <div className="viewer-layout">
-      <aside className="pole-sidebar"><div className="pole-search"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search pole ID or attachment" /></div><div className="pole-filters"><button onClick={() => setFilter("all")} className={filter === "all" ? "active" : ""}>All</button><button onClick={() => setFilter("complete")} className={filter === "complete" ? "active" : ""}>Complete</button><button onClick={() => setFilter("location")} className={filter === "location" ? "active" : ""}>Location only</button></div><div className="pole-list scrollbar-thin">{visiblePoles.map((pole, index) => <button key={pole.id} className={pole.id === selected?.id ? "selected" : ""} onClick={() => selectPole(pole)}><span className="pole-index">{String(index + 1).padStart(2, "0")}</span><p><strong>{pole.poleName}</strong><small>{pole.attachments.length} attachments • top {meters(pole.topHeightM)}</small></p><i className={pole.status === "complete" ? "complete" : "location"} /></button>)}</div><footer><span>{visiblePoles.length} records shown</span><button><ListFilter /> Filter</button></footer></aside>
+      <aside className="pole-sidebar"><div className="pole-search"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search poles" placeholder="Search pole ID or attachment" /></div><div className="pole-filters"><button onClick={() => setFilter("all")} className={filter === "all" ? "active" : ""}>All</button><button onClick={() => setFilter("complete")} className={filter === "complete" ? "active" : ""}>Complete</button><button onClick={() => setFilter("location")} className={filter === "location" ? "active" : ""}>Location only</button></div><div className="pole-list scrollbar-thin">{visiblePoles.map((pole, index) => <button key={pole.id} className={pole.id === selected?.id ? "selected" : ""} onClick={() => selectPole(pole)}><span className="pole-index">{String(index + 1).padStart(2, "0")}</span><p><strong>{pole.poleName}</strong><small>{pole.attachments.length} attachments • top {meters(pole.topHeightM)}</small></p><i className={pole.status === "complete" ? "complete" : "location"} /></button>)}</div><footer><span>{visiblePoles.length} records shown</span><button><ListFilter /> Filter</button></footer></aside>
       <section className="viewer-main"><nav className="view-tabs"><button className={view === "map" ? "active" : ""} onClick={() => setView("map")}><MapIcon /> Satellite map</button><button className={view === "split" ? "active" : ""} onClick={() => setView("split")}><SplitSquareVertical /> Photo + model</button><button className={view === "photo" ? "active" : ""} onClick={() => setView("photo")}><ImageIcon /> Photo</button><button className={view === "profile" ? "active" : ""} onClick={() => setView("profile")}><Layers3 /> SPIDA profile</button><span className="view-quality"><i /> Original-quality zoom</span></nav>
         {view === "map" && <SatelliteMap poles={data.poles} selected={selected} onSelect={selectPole} onOpen={(pole) => selectPole(pole, "split")} project={data.project} />}
         {selected && view === "split" && <div className="split-view"><PanelHeader eyebrow="FIELD IMAGE" title="Measured pole" trailing={selected.imageFilename || "No image"} /><PanelHeader eyebrow="ENGINEERING PROFILE" title="SPIDA-style measured model" trailing={`TOP ${meters(selected.topHeightM)}`} /><PhotoZoom pole={selected} projectId={projectId} focusAttachment={focusAttachment} /><ModelZoom pole={selected} focusAttachment={focusAttachment} /></div>}
@@ -159,7 +163,6 @@ export function ProjectViewer({ projectId, user, signOutPath, onSignOut }: { pro
 
 function PanelHeader({ eyebrow, title, trailing }: { eyebrow: string; title: string; trailing: string }) { return <header className="panel-header"><p><small>{eyebrow}</small><strong>{title}</strong></p><span>{trailing}</span></header>; }
 
-function projectImageUrl(projectId: string, poleId: string) { return `/api/projects/${encodeURIComponent(projectId)}/poles/${encodeURIComponent(poleId)}/image`; }
 
 function PhotoZoom({ pole, projectId, focusAttachment }: { pole: PoleRecord; projectId: string; focusAttachment: AttachmentRecord | null }) {
   const frame = useRef<HTMLDivElement>(null); const drag = useRef<{ x: number; y: number; px: number; py: number } | null>(null);
@@ -169,7 +172,7 @@ function PhotoZoom({ pole, projectId, focusAttachment }: { pole: PoleRecord; pro
   const fitScale = Math.min(size.width / natural.width, size.height / natural.height) * 0.94;
   const fit = useCallback(() => { setScale(fitScale); setPan({ x: (size.width - natural.width * fitScale) / 2, y: (size.height - natural.height * fitScale) / 2 }); }, [fitScale, natural.height, natural.width, size.height, size.width]);
   useEffect(() => { const node = frame.current; if (!node) return; const observer = new ResizeObserver(([entry]) => setSize({ width: entry.contentRect.width, height: entry.contentRect.height })); observer.observe(node); return () => observer.disconnect(); }, []);
-  useEffect(() => { let objectUrl = ""; let active = true; setLoaded(false); void authenticatedFetch(projectImageUrl(projectId, pole.id)).then(async (response) => { if (!response.ok) throw new Error("Photo is unavailable"); return response.blob(); }).then((blob) => { if (!active) return; objectUrl = URL.createObjectURL(blob); setImageSrc(objectUrl); }).catch(() => { if (active) setImageSrc(""); }); return () => { active = false; if (objectUrl) URL.revokeObjectURL(objectUrl); }; }, [pole.id, projectId]);
+  useEffect(() => { let objectUrl = ""; let active = true; setLoaded(false); void authenticatedFetch(projectImageUrl(projectId, pole.id)).then(async (response) => { if (!response.ok) throw new Error("Photo is unavailable"); return response.blob(); }).then((blob) => { if (!active) return; objectUrl = URL.createObjectURL(blob); setImageSrc(objectUrl); }).catch(() => { if (active) setImageSrc(""); }); return () => { active = false; if (objectUrl) URL.revokeObjectURL(objectUrl); }; }, [pole, projectId]);
   useEffect(() => { setLoaded(false); setNatural({ width: pole.imageWidth || 3024, height: pole.imageHeight || 4032 }); }, [pole.id, pole.imageHeight, pole.imageWidth]);
   useEffect(() => { fit(); }, [fit]);
   useEffect(() => { if (!focusAttachment || focusAttachment.photoX == null || focusAttachment.photoY == null) return; const next = Math.max(fitScale * 2.6, 0.75); setScale(next); setPan({ x: size.width / 2 - focusAttachment.photoX * next, y: size.height / 2 - focusAttachment.photoY * next }); }, [focusAttachment, fitScale, size.height, size.width]);
@@ -177,12 +180,7 @@ function PhotoZoom({ pole, projectId, focusAttachment }: { pole: PoleRecord; pro
   if (!pole.imageFilename) return <div className="no-photo"><ImageIcon /><h3>No original image uploaded</h3><p>The location and pole information remain available. An administrator can add the matching full-quality photo from Upload data.</p></div>;
   return <div ref={frame} className="photo-zoom" onWheel={(event) => { event.preventDefault(); zoom(event.deltaY < 0 ? 1.18 : 0.85); }} onPointerDown={(event) => { if (event.button !== 0) return; drag.current = { x: event.clientX, y: event.clientY, px: pan.x, py: pan.y }; event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { if (!drag.current) return; setPan({ x: drag.current.px + event.clientX - drag.current.x, y: drag.current.py + event.clientY - drag.current.y }); }} onPointerUp={() => { drag.current = null; }}>
     {!loaded && <div className="image-loading"><LoaderCircle className="spin" /> Loading original pixels…</div>}
-    <div className="photo-stage" style={{ width: natural.width, height: natural.height, transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})` }}>
-      {/* Original object URLs must preserve their natural dimensions for calibrated overlays. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={imageSrc || undefined} alt={`${pole.poleName} full-resolution measured pole`} draggable={false} onLoad={(event) => { const image = event.currentTarget; setNatural({ width: image.naturalWidth, height: image.naturalHeight }); setLoaded(true); }} />
-      <PhotoOverlay pole={pole} />
-    </div>
+    <div className="photo-stage" style={{ width: natural.width, height: natural.height, transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})` }}><img src={imageSrc || undefined} alt={`${pole.poleName} full-resolution measured pole`} draggable={false} onLoad={(event) => { const image = event.currentTarget; setNatural({ width: image.naturalWidth, height: image.naturalHeight }); setLoaded(true); }} /><PhotoOverlay pole={pole} /></div>
     <div className="zoom-toolbar"><button onClick={() => zoom(0.8)} aria-label="Zoom out"><Minus /></button><strong>{Math.round(scale * 100)}%</strong><button onClick={() => zoom(1.25)} aria-label="Zoom in"><Plus /></button><button onClick={() => { setScale(1); setPan({ x: size.width / 2 - natural.width / 2, y: size.height / 2 - natural.height / 2 }); }}>100%</button><button onClick={fit}><Focus /> Fit</button></div><span className="fullres-badge"><Maximize2 /> {natural.width} × {natural.height} original</span><span className="drag-hint">Scroll to zoom • drag to move</span>
   </div>;
 }
@@ -254,11 +252,7 @@ function SatelliteMap({ poles, selected, onSelect, onOpen, project }: { poles: P
   for (let ty = Math.floor(top / 256); ty <= Math.floor((top + size.height) / 256); ty += 1) for (let tx = Math.floor(left / 256); tx <= Math.floor((left + size.width) / 256); tx += 1) if (ty >= 0 && ty < count) tiles.push({ key: `${tx}-${ty}`, x: tx, y: ty, urlX: ((tx % count) + count) % count });
   const changeZoom = (next: number) => setZoom(clamp(next, 2, 20));
   return <section className="map-panel"><header className="map-heading"><p><small>SATELLITE MAP</small><strong>{project.location_label || "Pole locations"}</strong></p><span>Drag to pan • Scroll to zoom • Click a named pole</span></header><div ref={frame} className="slippy-map" onWheel={(event) => { event.preventDefault(); changeZoom(zoom + (event.deltaY < 0 ? 1 : -1)); }} onPointerDown={(event) => { if (event.button !== 0 || (event.target as HTMLElement).closest("button,a,.map-selected-card")) return; drag.current = { x: event.clientX, y: event.clientY, centerX: centerWorld.x, centerY: centerWorld.y }; event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { if (!drag.current) return; const world = { x: drag.current.centerX - (event.clientX - drag.current.x), y: drag.current.centerY - (event.clientY - drag.current.y) }; setCenter(pointToLonLat(world.x, world.y, zoom)); }} onPointerUp={() => { drag.current = null; }}>
-    <div className="map-tiles">{tiles.map((tile) => (
-      // Dynamic map tiles use exact pixel coordinates and are not suitable for image optimization.
-      // eslint-disable-next-line @next/next/no-img-element
-      <img key={tile.key} src={`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${tile.y}/${tile.urlX}`} alt="" draggable={false} style={{ left: tile.x * 256 - left, top: tile.y * 256 - top }} />
-    ))}</div>
+    <div className="map-tiles">{tiles.map((tile) => <img key={tile.key} src={`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${tile.y}/${tile.urlX}`} alt="" draggable={false} style={{ left: tile.x * 256 - left, top: tile.y * 256 - top }} />)}</div>
     <span className="imagery-badge"><i /> SATELLITE IMAGERY</span><div className="map-controls"><button onClick={() => changeZoom(zoom + 1)}><Plus /></button><button onClick={() => changeZoom(zoom - 1)}><Minus /></button><button onClick={fit}><Crosshair /></button></div>
     {poles.map((pole) => { const point = worldPoint(pole.longitude, pole.latitude, zoom); return <button key={pole.id} className={`map-pole-marker ${selected?.id === pole.id ? "selected" : ""}`} style={{ left: point.x - left, top: point.y - top }} onClick={() => onSelect(pole)}><i /><span>{pole.poleName}</span></button>; })}
     <div className="map-legend"><span><i className="complete" /> Measurements + model</span><span><i className="location" /> Location only</span></div>
