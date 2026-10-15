@@ -18,12 +18,12 @@ begin
 end $$;
 alter table public.portal_users add constraint portal_users_role_check check (role in ('admin','staff','client'));
 
-create or replace function portal_private.can_read_project(p_project_id text)
+create or replace function portal_private.can_read_project(target text)
 returns boolean language sql stable security definer set search_path = '' as $$
   select exists (
     select 1 from public.portal_users u
     where u.supabase_user_id = auth.uid() and u.status = 'active'
-      and (u.role = 'admin' or exists (select 1 from public.user_projects a where a.user_id = u.id and a.project_id = p_project_id))
+      and (u.role = 'admin' or exists (select 1 from public.user_projects a where a.user_id = u.id and a.project_id = target))
   );
 $$;
 create or replace function portal_private.can_edit_project(p_project_id text)

@@ -26,7 +26,7 @@ alter table storage.objects enable row level security;
 create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint);
 create function storage.foldername(text) returns text[] language sql immutable as $$ select string_to_array($1,'/') $$;
 create function portal_private.is_admin() returns boolean language sql stable security definer set search_path='' as $$ select exists(select 1 from public.portal_users where supabase_user_id=auth.uid() and role='admin' and status='active') $$;
-create function portal_private.can_read_project(text) returns boolean language sql stable security definer set search_path='' as $$ select portal_private.is_admin() $$;
+create function portal_private.can_read_project(target text) returns boolean language sql stable security definer set search_path='' as $$ select portal_private.is_admin() $$;
 grant usage on schema public,auth,portal_private,storage to authenticated,anon;
 grant all on all tables in schema public,storage to authenticated,anon;
 grant execute on all functions in schema auth,portal_private,storage to authenticated,anon;
