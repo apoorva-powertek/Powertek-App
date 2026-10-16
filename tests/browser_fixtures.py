@@ -41,4 +41,3 @@ def setup(context, role="admin", invite=False):
 
 def no_overflow(page):
  assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"), "Page has horizontal overflow"
-
