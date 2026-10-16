@@ -19,7 +19,9 @@ export function createBrowserSupabase(): SupabaseClient {
 export async function authenticatedFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const { data } = await createBrowserSupabase().auth.getSession();
   if (!data.session) throw new PortalAuthError("Sign in to continue");
-  return fetch(input, { ...init, headers: { ...(init?.headers ?? {}), authorization: `Bearer ${data.session.access_token}` } });
+  const headers = new Headers(init?.headers);
+  headers.set("authorization", `Bearer ${data.session.access_token}`);
+  return fetch(input, { ...init, headers });
 }
 
 export class PortalAuthError extends Error {

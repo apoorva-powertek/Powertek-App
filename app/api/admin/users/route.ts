@@ -1,5 +1,6 @@
-import { authErrorResponse, requirePortalUser } from "@/lib/supabase";
+import { requirePortalUser } from "@/lib/supabase";
 import { parseAccessInput } from "@/lib/access";
+import { managementErrorResponse } from "@/lib/server/management-response";
 import { invitationClient } from "@/lib/server/invitations";
 
 export async function POST(request: Request) {
@@ -12,12 +13,17 @@ export async function POST(request: Request) {
     // privileged client) authorizes the atomic database access update.
     let mail;
     if (input.sendInvite) {
+      const registered = await client.from("portal_users").select("supabase_user_id").ilike("email", input.email).maybeSingle();
+      if (registered.error) throw registered.error;
+      if (registered.data?.supabase_user_id) return Response.json({ error: "This person already has an account. Save their permissions, or ask them to use Forgot password." }, { status: 409 });
+    }
+    if (input.sendInvite) {
       try { mail = invitationClient(); }
       catch (error) { return Response.json({ error: error instanceof Error ? error.message : "Invitation service is not configured" }, { status: 503 }); }
     }
-    const saved = await client.rpc("save_portal_access", {
+    const saved = await client.rpc("manage_portal_user", {
       p_email: input.email, p_display_name: input.displayName, p_role: input.role,
-      p_manage_clients: input.manageClients, p_assignments: input.assignments,
+      p_manage_clients: input.manageClients, p_assignments: input.assignments, p_status: input.status,
     });
     if (saved.error) throw saved.error;
     const id = String(saved.data);
@@ -32,5 +38,5 @@ export async function POST(request: Request) {
       if (marked.error) return Response.json({ error: "Invitation email sent, but its delivery status could not be saved. Refresh before retrying.", accessSaved: true, invitationSent: true }, { status: 502 });
     }
     return Response.json({ id, email: input.email, invitationSent: Boolean(mail) }, { status: 200 });
-  } catch (error) { return authErrorResponse(error); }
+  } catch (error) { return managementErrorResponse(error, "user"); }
 }
