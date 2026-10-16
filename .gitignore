@@ -49,3 +49,7 @@ next-env.d.ts
 # Cloudflare local runtime secrets
 .dev.vars
 .dev.vars.*
+
+# Python browser-test caches
+__pycache__/
+*.pyc

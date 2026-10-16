@@ -1,15 +1,13 @@
-import { authErrorResponse, requireClientManager } from "@/lib/supabase";
-
+import { requireClientManager } from "@/lib/supabase";
+import { parseClientInput, FormValidationError } from "@/lib/management";
+import { managementErrorResponse } from "@/lib/server/management-response";
 export async function POST(request: Request) {
   try {
     const { client } = await requireClientManager(request);
-    const body = await request.json() as { name?: string; code?: string };
-    const name = String(body.name ?? "").trim();
-    const code = String(body.code ?? name).toUpperCase().replace(/[^A-Z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 32);
-    if (!name || !code) return Response.json({ error: "Client name and code are required" }, { status: 400 });
-    const result = await client.from("clients").insert({ id: crypto.randomUUID(), name, code, status: "active" }).select("id,name,code").single();
+    const body = await request.json().catch(() => { throw new FormValidationError("Enter valid client details.", "name"); });
+    const input = parseClientInput(body);
+    const result = await client.rpc("save_portal_client", { p_client_id: input.id, p_name: input.name, p_code: input.code, p_status: input.status });
     if (result.error) throw result.error;
-    return Response.json(result.data, { status: 201 });
-  } catch (error) { return authErrorResponse(error); }
+    return Response.json({ ...input, id: result.data }, { status: input.id ? 200 : 201 });
+  } catch (error) { return managementErrorResponse(error, "client"); }
 }
-

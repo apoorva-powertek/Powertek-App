@@ -8,7 +8,9 @@ The website, logo, navy `#0c2170`, and orange `#ff8d2a` remain Powertek branded.
 
 1. Back up the existing Supabase database, review, and apply
    `supabase/migrations/20261012090000_invites_and_staff_permissions.sql` after the
-   two earlier migrations. It assumes the existing Powertek tables and
+   two earlier migrations, then apply
+   `20261016090000_management_flow_and_defaults.sql` for timestamp defaults and
+   the current management flows. It assumes the existing Powertek tables and
    `portal_private.is_admin()` function are already present. It adds staff roles,
    invitation tracking, project upload permissions, atomic access updates, and
    database/storage RLS guards. Test against a staging copy before production.
@@ -84,16 +86,21 @@ a follow-up security feature; this change does not claim to enforce MFA.
 | --- | --- | --- | --- |
 | View projects | All | Assigned projects | Assigned projects |
 | Upload/import project data | All | Each assignment's Upload / edit toggle | No |
-| View/create client workspaces | All | Manage clients toggle | No |
+| Create/edit/archive client workspaces | All | Manage clients toggle | No |
 | Create projects or change ownership | Yes | No | No |
 | Invite people and change permissions | Yes | No | No |
+
+People can be invited before projects exist. Project assignments are optional;
+unassigned users see no project data. See [Management flows](admin-management-flow.md)
+for client editing, inline creation, account status, and validation.
 
 Staff client-management permission exposes the client directory, but does not
 grant project or pole access. Client progress and survey counts still reflect
 only visible assigned projects. Revoked upload permissions take effect on the
 next request; UI visibility is never the only access check.
 
-Access changes and assignments are saved atomically by `save_portal_access`,
+Access changes, assignments, and account status are saved atomically by
+`manage_portal_user` and `save_portal_access`,
 using the caller's JWT and an admin check. The service-role client is used only
 by the server to send invitation emails. For an email delivery failure, access
 remains saved and the directory records `failed`; the interface reports that

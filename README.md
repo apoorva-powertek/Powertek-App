@@ -34,6 +34,9 @@ first-admin workflow, secure server-key configuration, email redirects, migratio
 and role permissions. No default administrator password is shipped. The legacy
 `PORTAL_SETUP_CODE` flow is disabled and does not create current portal accounts.
 
+See [Client, project, and people management](docs/admin-management-flow.md) for
+independent invitations, inline client creation, editing, archiving, and validation.
+
 See [Design recommendations](docs/design-recommendations.md) for the dashboard
 redesign, photo guidance, research sources, and suggested next priorities.
 

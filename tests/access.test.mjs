@@ -11,8 +11,8 @@ test('staff receives only explicit capabilities, with project assignments', () =
  assert.equal(canManageClients({ role: 'staff', permissions: { manageClients: false } }), false);
  assert.equal(canManageClients({ role: 'client', permissions: { manageClients: true } }), false);
 });
-test('reject malformed, duplicate and empty client assignments', () => {
- for (const payload of [{ ...invitation, role: 'owner' }, { ...invitation, email: 'broken' }, { ...invitation, assignments: [] }, { ...invitation, assignments: [null] }, { ...invitation, assignments: [{ projectId: 'one' }, { projectId: 'one' }] }]) assert.throws(() => parseAccessInput(payload));
+test('reject malformed and duplicate assignments', () => {
+ for (const payload of [{ ...invitation, role: 'owner' }, { ...invitation, email: 'broken' }, { ...invitation, assignments: [null] }, { ...invitation, assignments: [{ projectId: 'one' }, { projectId: 'one' }] }]) assert.throws(() => parseAccessInput(payload));
 });
 const projects = [
  { id:'a', client_id:'c1',client_name:'Northline',name:'Alpha',code:'A',location_label:'BC',status:'active',pole_count:10,complete_count:5,attachment_count:20,updated_at:'2026-10-10T00:00:00Z' },
@@ -26,4 +26,22 @@ test('advanced filters combine client, status, progress and inclusive dates', ()
 });
 test('overview uses weighted pole completion, respects filtered data and empty projects', () => {
  assert.equal(summarizeProjects(projects).progress,83); assert.equal(summarizeProjects([projects[0]]).progress,50); assert.equal(summarizeProjects([]).progress,0);
+});
+
+import { parseClientInput, parseProjectInput, managementError } from '../lib/management.ts';
+test('a person can be invited without any assigned projects',()=>{
+ const user=parseAccessInput({...invitation,assignments:[]});assert.deepEqual(user.assignments,[]);assert.equal(user.status,'active');
+ assert.deepEqual(parseAccessInput({...invitation,assignments:undefined}).assignments,[]);
+ assert.throws(()=>parseAccessInput({...invitation,status:'disabled'}),/Enable/);
+});
+test('blank client/project codes are generated from names and client selection is actionable',()=>{
+ assert.equal(parseClientInput({name:'Example Utility',code:''}).code,'EXAMPLE-UTILITY');
+ assert.equal(parseProjectInput({clientId:'c1',name:'New Survey',code:''}).code,'NEW-SURVEY');
+ assert.throws(()=>parseProjectInput({name:'New Survey'}),/add a new client/);
+ assert.throws(()=>parseClientInput({name:{value:'bad'}}),/client name/);
+});
+test('duplicate and authorization failures have useful HTTP errors',()=>{
+ assert.equal(managementError({code:'23505'},'client').status,409);
+ assert.match(managementError({code:'23505'},'project').error,/for this client/);
+ assert.equal(managementError({code:'42501'},'user').status,403);
 });
