@@ -1,59 +1,31 @@
 import { authErrorResponse, requireProjectEditor } from "@/lib/supabase";
-import type { ImportPole } from "@/lib/portal-types";
-
+import { maxSourceFileBytes, validateSurveyPoles, type ImportFileManifest } from "@/lib/survey-quality";
+import { qualityErrorResponse } from "@/lib/server/quality-response";
 type Context = { params: Promise<{ projectId: string }> };
-const finiteOrNull = (value: unknown): number | null => { const parsed = typeof value === "number" ? value : Number(value); return Number.isFinite(parsed) ? parsed : null; };
-const normalize = (value: string) => value.toUpperCase().replace(/\.[A-Z0-9]+$/i, "").replace(/[^A-Z0-9]+/g, "");
-function kind(name: string) { const value = name.toUpperCase(); if (/TRANSFORMER|CUTOUT|FUSE|SWITCH|LIGHT|METER|CABINET|ANTENNA|RISER|EQUIPMENT/.test(value)) return "equipment"; if (/INSULATOR|PIN|SPOOL|DEAD.?END/.test(value)) return "insulator"; if (/GUY|ANCHOR/.test(value)) return "guy"; if (/PRIMARY|NEUTRAL|COMM|WIRE|TEL|CATV|FIBER|SECONDARY/.test(value)) return "wire"; return "attachment"; }
-
 export async function POST(request: Request, context: Context) {
   try {
     const { projectId } = await context.params;
     const { client } = await requireProjectEditor(request, projectId);
-    const body = await request.json() as { poles?: ImportPole[]; sourceName?: string };
-    if (!Array.isArray(body.poles) || !body.poles.length) return Response.json({ error: "No valid pole records were found in the upload" }, { status: 400 });
-    if (body.poles.length > 5000) return Response.json({ error: "A single import is limited to 5,000 poles" }, { status: 413 });
-    const project = await client.from("projects").select("id").eq("id", projectId).maybeSingle();
-    if (project.error) throw project.error;
-    if (!project.data) return Response.json({ error: "Project not found" }, { status: 404 });
-    const rows = body.poles.flatMap((pole) => {
-      const poleName = String(pole.poleName ?? "").trim();
-      const latitude = finiteOrNull(pole.latitude), longitude = finiteOrNull(pole.longitude), elevation = finiteOrNull(pole.elevationM);
-      if (!poleName || latitude === null || longitude === null || elevation === null || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return [];
-      const attachments = (pole.attachments ?? []).filter((item) => item && finiteOrNull(item.heightM) !== null);
-      return [{ pole, poleName, latitude, longitude, elevation, attachments }];
-    });
-    if (!rows.length) return Response.json({ error: "Pole coordinates were missing or invalid" }, { status: 400 });
-    const timestamp = new Date().toISOString();
-    const records = rows.map(({ pole, poleName, latitude, longitude, elevation, attachments }) => ({
-      id: crypto.randomUUID(), project_id: projectId, pole_name: poleName, normalized_name: normalize(poleName), latitude, longitude, elevation_m: elevation,
-      top_height_m: finiteOrNull(pole.topHeightM), pole_height_ft: finiteOrNull(pole.poleHeightFt), pole_class: pole.poleClass == null ? null : String(pole.poleClass),
-      status: pole.imageFilename || attachments.length ? "complete" : "location_only", image_filename: pole.imageFilename ?? null,
-      image_width: finiteOrNull(pole.imageWidth), image_height: finiteOrNull(pole.imageHeight), source_json_filename: pole.sourceJsonFilename ?? null,
-      model_version: pole.modelVersion ?? null, tool_name: pole.toolName ?? null, base_x: finiteOrNull(pole.baseX), base_y: finiteOrNull(pole.baseY),
-      top_x: finiteOrNull(pole.topX), top_y: finiteOrNull(pole.topY), raw_json: pole.rawJson === undefined ? null : JSON.stringify(pole.rawJson).slice(0, 750000), updated_at: timestamp,
-    }));
-    for (let i = 0; i < records.length; i += 100) {
-      const upsert = await client.from("poles").upsert(records.slice(i, i + 100), { onConflict: "project_id,pole_name" }).select("id,pole_name");
-      if (upsert.error) throw upsert.error;
+    const text = await request.text();
+    if (new TextEncoder().encode(text).length > 3500000) return Response.json({ error: "The record package is too large. Use a smaller spreadsheet batch." }, { status: 413 });
+    let body;
+    try { body = JSON.parse(text); } catch { return Response.json({ error: "Invalid import request" }, { status: 400 }); }
+    if (!body || typeof body !== "object" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id ?? "")) return Response.json({ error: "Invalid import identifier" }, { status: 400 });
+    if (body.action === "commit") {
+      const batch = await client.from("survey_imports").select("project_id").eq("id", body.id).maybeSingle();
+      if (batch.error) throw batch.error;
+      if (batch.data?.project_id !== projectId) return Response.json({ error: "Import not found" }, { status: 404 });
+      const result = await client.rpc("commit_survey_import", { p_id: body.id });
+      if (result.error) throw result.error;
+      return Response.json(result.data);
     }
-    const saved = await client.from("poles").select("id,pole_name").eq("project_id", projectId);
-    if (saved.error) throw saved.error;
-    const idByName = new Map((saved.data ?? []).map((row) => [row.pole_name, row.id]));
-    const poleIds = rows.map((row) => idByName.get(row.poleName)).filter(Boolean) as string[];
-    const removed = await client.from("attachments").delete().in("pole_id", poleIds);
-    if (removed.error) throw removed.error;
-    const attachments = rows.flatMap(({ poleName, attachments: items }) => items.map((item, index) => ({
-      id: crypto.randomUUID(), pole_id: idByName.get(poleName), name: String(item.name ?? `Attachment ${index + 1}`).trim(), height_m: finiteOrNull(item.heightM),
-      photo_x: finiteOrNull(item.photoX), photo_y: finiteOrNull(item.photoY), side: item.side === "left" ? "left" : "right", color: item.color ?? null, kind: item.kind ?? kind(item.name ?? ""), sort_order: index,
-    })));
-    for (let i = 0; i < attachments.length; i += 250) {
-      const inserted = await client.from("attachments").insert(attachments.slice(i, i + 250));
-      if (inserted.error) throw inserted.error;
-    }
-    const updated = await client.rpc("touch_portal_project", { p_project_id: projectId });
-    if (updated.error) throw updated.error;
-    return Response.json({ importedPoles: rows.length, importedAttachments: attachments.length, sourceName: body.sourceName ?? null });
-  } catch (error) { return authErrorResponse(error); }
+    if (body.action !== "prepare") return Response.json({ error: "Validate your package before importing." }, { status: 400 });
+    const validated = validateSurveyPoles(body.poles);
+    if (validated.errors.length) return Response.json({ error: validated.errors.slice(0, 10).join(" ") }, { status: 400 });
+    const files = body.files as ImportFileManifest[];
+    if (!Array.isArray(files) || !files.length || files.length > 10000 || files.some((f) => !f || typeof f.name !== "string" || typeof f.objectKey !== "string" || !f.objectKey.startsWith(`${projectId}/imports/${body.id}/`) || !Number.isSafeInteger(f.size) || f.size <= 0 || f.size > maxSourceFileBytes)) return Response.json({ error: "Invalid source file manifest" }, { status: 400 });
+    const result = await client.rpc("prepare_survey_import", { p_id: body.id, p_project_id: projectId, p_source_name: String(body.sourceName ?? "").slice(0, 180), p_poles: validated.poles, p_files: files });
+    if (result.error) throw result.error;
+    return Response.json(result.data);
+  } catch (error) { return qualityErrorResponse(error) ?? authErrorResponse(error); }
 }
-

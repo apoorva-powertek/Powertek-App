@@ -1,5 +1,7 @@
 "use client";
 import Image from "next/image";
+import { ActivityLog, SurveyReview } from "./survey-quality";
+import { reviewLabels, reviewStages, type ReviewStage } from "@/lib/survey-quality";
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -14,7 +16,7 @@ import {
 } from "lucide-react";
 
 type ProjectInfo = { id: string; name: string; code: string; description: string; location_label: string; status: string; client_id: string; client_name: string; client_code: string };
-type ProjectPayload = { project: ProjectInfo; poles: PoleRecord[] };
+type ProjectPayload = { canEdit?: boolean; project: ProjectInfo; poles: PoleRecord[] };
 type ViewName = "map" | "split" | "photo" | "profile";
 
 function Brand() { return <div className="portal-brand compact"><Image src="/powertek-logo.svg" alt="Powertek Utility Services" width={362} height={108} priority /></div>; }
@@ -68,6 +70,9 @@ export function ProjectViewer({ projectId, user, signOutPath, onSignOut }: { pro
   const [view, setView] = useState<ViewName>("map");
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "complete" | "location">("all");
+  const [reviewFilter,setReviewFilter]=useState<"all"|ReviewStage>("all");
+  const [revision,setRevision]=useState(0);
+  const [historyOpen,setHistoryOpen]=useState(false);
   const [error, setError] = useState("");
   const [exporting, setExporting] = useState("");
   const [focusAttachment, setFocusAttachment] = useState<AttachmentRecord | null>(null);
@@ -77,9 +82,10 @@ export function ProjectViewer({ projectId, user, signOutPath, onSignOut }: { pro
   const visiblePoles = useMemo(() => (data?.poles ?? []).filter((pole) => {
     const match = !query.trim() || pole.poleName.toLowerCase().includes(query.toLowerCase()) || pole.attachments.some((item) => item.name.toLowerCase().includes(query.toLowerCase()));
     const status = filter === "all" || (filter === "complete" ? pole.status === "complete" : pole.status !== "complete");
-    return match && status;
-  }), [data, query, filter]);
+    return match && status && (reviewFilter === "all" || (pole.reviewStage??"uploaded") === reviewFilter);
+  }), [data, query, filter, reviewFilter]);
 
+  async function refreshSurvey() { const payload=await fetchProject(projectId);setData(payload);setRevision(r=>r+1); }
   const selectPole = useCallback((pole: PoleRecord, nextView?: ViewName) => { setSelectedId(pole.id); setPolesOpen(false); setFocusAttachment(null); if (nextView) setView(nextView); }, []);
   const locateAttachment = useCallback((attachment: AttachmentRecord) => { setFocusAttachment(attachment); setView("split"); }, []);
 
@@ -149,8 +155,9 @@ export function ProjectViewer({ projectId, user, signOutPath, onSignOut }: { pro
     {error && <div className="viewer-error">{error}<button onClick={() => setError("")}>×</button></div>}
     {polesOpen && <button className="viewer-poles-backdrop" aria-label="Close pole list" onClick={() => setPolesOpen(false)} />}
     <div className="viewer-layout">
-      <aside className="pole-sidebar"><div className="pole-search"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search poles" placeholder="Search pole ID or attachment" /></div><div className="pole-filters"><button onClick={() => setFilter("all")} className={filter === "all" ? "active" : ""}>All</button><button onClick={() => setFilter("complete")} className={filter === "complete" ? "active" : ""}>Complete</button><button onClick={() => setFilter("location")} className={filter === "location" ? "active" : ""}>Location only</button></div><div className="pole-list scrollbar-thin">{visiblePoles.map((pole, index) => <button key={pole.id} className={pole.id === selected?.id ? "selected" : ""} onClick={() => selectPole(pole)}><span className="pole-index">{String(index + 1).padStart(2, "0")}</span><p><strong>{pole.poleName}</strong><small>{pole.attachments.length} attachments • top {meters(pole.topHeightM)}</small></p><i className={pole.status === "complete" ? "complete" : "location"} /></button>)}</div><footer><span>{visiblePoles.length} records shown</span><button><ListFilter /> Filter</button></footer></aside>
-      <section className="viewer-main"><nav className="view-tabs"><button className={view === "map" ? "active" : ""} onClick={() => setView("map")}><MapIcon /> Satellite map</button><button className={view === "split" ? "active" : ""} onClick={() => setView("split")}><SplitSquareVertical /> Photo + model</button><button className={view === "photo" ? "active" : ""} onClick={() => setView("photo")}><ImageIcon /> Photo</button><button className={view === "profile" ? "active" : ""} onClick={() => setView("profile")}><Layers3 /> SPIDA profile</button><span className="view-quality"><i /> Original-quality zoom</span></nav>
+      <aside className="pole-sidebar"><div className="pole-search"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search poles" placeholder="Search pole ID or attachment" /></div><div className="pole-filters"><button onClick={() => setFilter("all")} className={filter === "all" ? "active" : ""}>All</button><button onClick={() => setFilter("complete")} className={filter === "complete" ? "active" : ""}>Complete</button><button onClick={() => setFilter("location")} className={filter === "location" ? "active" : ""}>Location only</button></div><label className="review-filter">Review stage<select aria-label="Filter by review stage" value={reviewFilter} onChange={e=>setReviewFilter(e.target.value as typeof reviewFilter)}><option value="all">All review stages</option>{reviewStages.map(s=><option key={s} value={s}>{reviewLabels[s]}</option>)}</select></label><div className="pole-list scrollbar-thin">{visiblePoles.map((pole, index) => <button key={pole.id} className={pole.id === selected?.id ? "selected" : ""} onClick={() => selectPole(pole)}><span className="pole-index">{String(index + 1).padStart(2, "0")}</span><p><strong>{pole.poleName}</strong><small>{reviewLabels[pole.reviewStage??"uploaded"]} • {pole.attachments.length} attachments</small></p><i className={pole.status === "complete" ? "complete" : "location"} /></button>)}</div><footer><span>{visiblePoles.length} records shown</span><button><ListFilter /> Filter</button></footer></aside>
+      <section className="viewer-main">{selected&&<SurveyReview key={selected.id} pole={selected} admin={user.role==="admin"} canEdit={data.canEdit===true} onChanged={refreshSurvey}/>}
+        {data.canEdit&&<div className="project-history"><button className="workspace-button secondary" aria-expanded={historyOpen} onClick={()=>setHistoryOpen(!historyOpen)}>{historyOpen?"Hide":"Show"} project history</button>{historyOpen&&<ActivityLog projectId={projectId} revision={revision}/>}</div>}<nav className="view-tabs"><button className={view === "map" ? "active" : ""} onClick={() => setView("map")}><MapIcon /> Satellite map</button><button className={view === "split" ? "active" : ""} onClick={() => setView("split")}><SplitSquareVertical /> Photo + model</button><button className={view === "photo" ? "active" : ""} onClick={() => setView("photo")}><ImageIcon /> Photo</button><button className={view === "profile" ? "active" : ""} onClick={() => setView("profile")}><Layers3 /> SPIDA profile</button><span className="view-quality"><i /> Original-quality zoom</span></nav>
         {view === "map" && <SatelliteMap poles={data.poles} selected={selected} onSelect={selectPole} onOpen={(pole) => selectPole(pole, "split")} project={data.project} />}
         {selected && view === "split" && <div className="split-view"><PanelHeader eyebrow="FIELD IMAGE" title="Measured pole" trailing={selected.imageFilename || "No image"} /><PanelHeader eyebrow="ENGINEERING PROFILE" title="SPIDA-style measured model" trailing={`TOP ${meters(selected.topHeightM)}`} /><PhotoZoom pole={selected} projectId={projectId} focusAttachment={focusAttachment} /><ModelZoom pole={selected} focusAttachment={focusAttachment} /></div>}
         {selected && view === "photo" && <div className="single-view"><PanelHeader eyebrow="FIELD IMAGE" title={`${selected.poleName} • original photo`} trailing={selected.imageFilename || "No image"} /><PhotoZoom pole={selected} projectId={projectId} focusAttachment={focusAttachment} /></div>}

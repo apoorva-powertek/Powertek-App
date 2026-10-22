@@ -25,6 +25,8 @@ export type AttachmentRecord = {
 export type PoleRecord = {
   id: string;
   projectId: string;
+  reviewStage?: import("./survey-quality").ReviewStage;
+  updatedAt?: string;
   poleName: string;
   latitude: number;
   longitude: number;
