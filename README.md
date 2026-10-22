@@ -70,3 +70,5 @@ listed in the admin/invitation guide.
 Application source recovered from Sites commit `b2430bcb1e790978adbd5224c65179e85718d76f`. Application files and the dependency lockfile are preserved; repository documentation was added for this GitHub import.
 
 The source inventory and seed counts were verified during import. The current local production build and type check have subsequently passed with Node 24 and the pinned pnpm toolchain. No new live deployment was performed.
+
+Survey import, review stages, and activity history: [workflow and operations](docs/survey-quality-workflow.md).

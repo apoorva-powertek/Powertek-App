@@ -45,3 +45,19 @@ test('duplicate and authorization failures have useful HTTP errors',()=>{
  assert.match(managementError({code:'23505'},'project').error,/for this client/);
  assert.equal(managementError({code:'42501'},'user').status,403);
 });
+
+import {validateSurveyPoles,reviewActions} from '../lib/survey-quality.ts';
+test('import rejects blank numeric cells, invalid ranges and duplicate IDs',()=>{
+ const good={poleName:'P-1',latitude:0,longitude:0,elevationM:0,attachments:[]};
+ assert.equal(validateSurveyPoles([good]).errors.length,0);
+ assert.ok(validateSurveyPoles([{...good,latitude:null}]).errors.length);
+ assert.ok(validateSurveyPoles([{...good,longitude:181}]).errors.length);
+ assert.ok(validateSurveyPoles([good,{...good,poleName:'P 1'}]).errors.some(e=>e.includes('duplicate')));
+ assert.ok(validateSurveyPoles([{...good,attachments:[{name:'Primary',heightM:-1}]}]).errors.length);
+});
+test('review actions expose approval and delivery only to administrators',()=>{
+ assert.deepEqual(reviewActions('uploaded',false),['needs_review']);
+ assert.deepEqual(reviewActions('needs_review',false),['uploaded']);
+ assert.deepEqual(reviewActions('approved',false),['uploaded']);
+ assert.deepEqual(reviewActions('needs_review',true),['approved','uploaded']);
+});
