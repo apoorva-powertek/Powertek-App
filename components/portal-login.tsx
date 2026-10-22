@@ -14,8 +14,8 @@ export function PasswordUpdate({ invitation = false }: { invitation?: boolean })
   return <main className="access-shell"><ThemeControl /><Brand /><section className="access-card"><p className="eyebrow">{invitation ? "YOU’RE INVITED" : "PASSWORD RESET"}</p><h1>{invitation ? "Set your workspace password" : "Choose a new password"}</h1><form className="portal-login-form" onSubmit={submit}><label><LockKeyhole size={16} /><input type="password" minLength={8} autoComplete="new-password" required value={password} onChange={(event) => setPassword(event.target.value)} aria-label="New password" placeholder="New password" /></label><label><LockKeyhole size={16} /><input type="password" minLength={8} autoComplete="new-password" required value={confirm} onChange={(event) => setConfirm(event.target.value)} aria-label="Confirm password" placeholder="Confirm password" /></label>{error && <p role="alert" aria-live="polite" className="login-feedback error">{error}</p>}<button className="primary-cta" disabled={busy} aria-busy={busy}>{busy ? "Saving…" : invitation ? "Accept invitation" : "Update password"}<ArrowRight size={17} /></button></form></section></main>;
 }
 
-export function PortalLogin({ admin = false }: { admin?: boolean }) {
-  const [mode, setMode] = useState<"signin" | "reset">("signin");
+export function PortalLogin({ admin = false, initialMode = "signin" }: { admin?: boolean; initialMode?: "signin" | "reset" }) {
+  const [mode, setMode] = useState<"signin" | "reset">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -27,7 +27,7 @@ export function PortalLogin({ admin = false }: { admin?: boolean }) {
     try {
       const supabase = createBrowserSupabase();
       if (mode === "reset") {
-        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/portal` });
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reset-password` });
         if (resetError) throw resetError;
         setMessage("If that address has a portal account, a password reset email is on its way.");
       } else {

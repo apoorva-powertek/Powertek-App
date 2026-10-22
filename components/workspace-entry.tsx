@@ -6,6 +6,7 @@ import { createBrowserSupabase } from "@/lib/supabase";
 import { PasswordUpdate, PortalLogin } from "@/components/portal-login";
 import { PortalApp } from "@/components/portal-app";
 import { ThemeControl } from "@/components/theme-control";
+import { recoveryDestination } from "@/lib/password-recovery";
 
 export function WorkspaceEntry({ admin = false }: { admin?: boolean }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -14,6 +15,8 @@ export function WorkspaceEntry({ admin = false }: { admin?: boolean }) {
   const [recovering, setRecovering] = useState(false);
   const [error, setError] = useState("");
   useEffect(() => {
+    const destination = recoveryDestination(window.location.href);
+    if (destination) { window.location.replace(destination); return; }
     // Supabase consumes the fragment during getSession; preserve its purpose.
     const recoveryLink = new URLSearchParams(window.location.hash.slice(1)).get("type") === "recovery";
     const supabase = createBrowserSupabase(); let alive = true; let generation = 0;
