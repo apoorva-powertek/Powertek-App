@@ -20,7 +20,7 @@ PROJECTS = [
 def setup(context, role="admin", invite=False):
  user = dict(id="10000000-0000-4000-8000-000000000001",email="test@example.com",email_confirmed_at="2026-10-01T00:00:00Z",aud="authenticated",role="authenticated",app_metadata={},user_metadata={})
  encode = lambda value: base64.urlsafe_b64encode(json.dumps(value).encode()).decode().rstrip("=")
- token = encode({"alg":"HS256","typ":"JWT"})+"."+encode({"sub":user["id"],"exp":int(time.time())+3600})+".synthetic"
+ token = encode({"alg":"HS256","typ":"JWT"})+"."+encode({"sub":user["id"],"exp":int(time.time())+3600})+"."+encode("synthetic-signature")
  session = dict(access_token=token,refresh_token="synthetic-refresh",token_type="bearer",expires_at=int(time.time())+3600,expires_in=3600,user=user)
  context.add_init_script("localStorage.setItem('sb-goqvlgiqqrglyjgpktav-auth-token',"+json.dumps(json.dumps(session))+");")
  profile = dict(id="test-user",email=user["email"],display_name="Alex Morgan",role=role,status="active")

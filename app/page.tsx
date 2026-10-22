@@ -1,6 +1,7 @@
 import { MarketingHome } from "@/components/marketing-home";
+import { AuthLinkRedirect } from "@/components/auth-link-redirect";
 
 export default function Home() {
-  return <MarketingHome portalSignInUrl="/portal" />;
+  return <><AuthLinkRedirect /><MarketingHome portalSignInUrl="/portal" /></>;
 }
 
