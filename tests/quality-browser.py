@@ -33,7 +33,7 @@ def configure(context, role="admin"):
   state['activity'].insert(0,dict(id=state['updated'],occurred_at="2026-10-22T12:00:00Z",actor_name="Alex Morgan",entity_type="survey",entity_id="pole-one",action="review_changed",details=dict(pole="P-1",**{"from":old,"to":body['stage']},note=body['note'])))
   route.fulfill(status=200,content_type="application/json",body='{"saved":true}')
  context.route("**/api/projects/project-one/review",review)
- context.route("**/api/activity?*",lambda route:route.fulfill(status=200,content_type="application/json",body=json.dumps(dict(events=state['activity'],next=None))))
+ context.route("**/api/activity**",lambda route:route.fulfill(status=200,content_type="application/json",body=json.dumps(dict(events=state['activity'],next=None))))
  # Prevent map requests from using external services during the fixture test.
  context.route("**/services.arcgisonline.com/**",lambda route:route.abort())
  return state
@@ -83,6 +83,13 @@ with sync_playwright() as p:
   page.set_viewport_size(dict(width=width,height=1000));no_overflow(page)
  page.set_viewport_size(dict(width=1440,height=1000));page.screenshot(path=str(OUTPUT/'survey-review.png'),full_page=True)
  page.locator('html').evaluate("el=>el.dataset.theme='dark'");page.wait_for_timeout(250);page.screenshot(path=str(OUTPUT/'survey-review-dark.png'),full_page=True)
+ page.get_by_label('Filter by review stage').select_option('approved')
+ assert page.locator('.pole-list>button').count()==0
+ page.get_by_label('Filter by review stage').select_option('uploaded')
+ assert page.locator('.pole-list>button').count()==1
+ page.goto(BASE_URL+'/admin');page.get_by_role('button',name='Activity history',exact=True).click()
+ expect(page.get_by_label('Activity history')).to_contain_text('Recheck primary attachment clearance')
+ page.set_viewport_size(dict(width=375,height=1000));no_overflow(page)
  assert not errors,errors
  context.close()
  for role in ['staff','client']:
