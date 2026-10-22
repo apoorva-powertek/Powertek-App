@@ -35,7 +35,7 @@ def configure(context, role="admin"):
  context.route("**/api/projects/project-one/review",review)
  context.route("**/api/activity**",lambda route:route.fulfill(status=200,content_type="application/json",body=json.dumps(dict(events=state['activity'],next=None))))
  # Prevent map requests from using external services during the fixture test.
- context.route("**/services.arcgisonline.com/**",lambda route:route.abort())
+ context.route("**/*.arcgisonline.com/**",lambda route:route.abort())
  return state
 
 with sync_playwright() as p:
