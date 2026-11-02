@@ -5,7 +5,6 @@ import { reviewLabels, reviewStages, type ReviewStage } from "@/lib/survey-quali
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
 import { projectsHref } from "@/lib/workspace-navigation";
 import type { AttachmentRecord, PoleRecord, PortalUser } from "@/lib/portal-types";
 import { ThemeControl } from "@/components/theme-control";
@@ -151,9 +150,9 @@ export function ProjectViewer({ projectId, user, signOutPath, onSignOut }: { pro
     finally { setExporting(""); }
   }
 
-  if (!data) return <main className="viewer-loading"><LoaderCircle className="spin" /><p>{error || "Loading secure pole workspace…"}</p><Link href={projectsHref(user.role)}>Return to projects</Link></main>;
+  if (!data) return <main className="viewer-loading"><LoaderCircle className="spin" /><p>{error || "Loading secure pole workspace…"}</p><a href={projectsHref(user.role)}>Return to projects</a></main>;
   return <main className={`viewer-shell ${polesOpen ? "poles-open" : ""}`}>
-    <header className="viewer-header"><button className="viewer-pole-toggle" aria-label={polesOpen ? "Close pole list" : "Open pole list"} aria-expanded={polesOpen} onClick={() => setPolesOpen(!polesOpen)}><Menu size={18} /></button><Link href={projectsHref(user.role)} aria-label="Go to projects"><Brand /></Link><div className="viewer-project-title"><Link href={projectsHref(user.role)}><ArrowLeft /> Projects</Link><span /><p><small>{data.project.client_name}</small><strong>{data.project.name}</strong></p></div><div className="viewer-actions"><ThemeControl /><button className="download-button" onClick={() => void downloadAll()} disabled={Boolean(exporting) || !data.poles.length} title={data.poles.length ? "Download project records and available photos" : "Upload pole records before downloading"}>{exporting ? <LoaderCircle className="spin" /> : <FileArchive />}<span>{exporting || "Download all poles"}</span></button><span className="viewer-account"><CircleUserRound /><span><strong>{user.displayName}</strong><small>{user.role}</small></span></span>{onSignOut ? <button className="icon-button" onClick={onSignOut} aria-label="Sign out"><LogOut /></button> : <a className="icon-button" href={signOutPath}><LogOut /></a>}</div></header>
+    <header className="viewer-header"><button className="viewer-pole-toggle" aria-label={polesOpen ? "Close pole list" : "Open pole list"} aria-expanded={polesOpen} onClick={() => setPolesOpen(!polesOpen)}><Menu size={18} /></button><a href={projectsHref(user.role)} aria-label="Go to projects"><Brand /></a><div className="viewer-project-title"><a href={projectsHref(user.role)}><ArrowLeft /> Projects</a><span /><p><small>{data.project.client_name}</small><strong>{data.project.name}</strong></p></div><div className="viewer-actions"><ThemeControl /><button className="download-button" onClick={() => void downloadAll()} disabled={Boolean(exporting) || !data.poles.length} title={data.poles.length ? "Download project records and available photos" : "Upload pole records before downloading"}>{exporting ? <LoaderCircle className="spin" /> : <FileArchive />}<span>{exporting || "Download all poles"}</span></button><span className="viewer-account"><CircleUserRound /><span><strong>{user.displayName}</strong><small>{user.role}</small></span></span>{onSignOut ? <button className="icon-button" onClick={onSignOut} aria-label="Sign out"><LogOut /></button> : <a className="icon-button" href={signOutPath}><LogOut /></a>}</div></header>
     {error && <div className="viewer-error">{error}<button aria-label="Dismiss project error" onClick={() => setError("")}>×</button></div>}
     {polesOpen && <button className="viewer-poles-backdrop" aria-label="Close pole list" onClick={() => setPolesOpen(false)} />}
     <div className="viewer-layout">

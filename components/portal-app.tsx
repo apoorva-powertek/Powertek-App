@@ -1,7 +1,6 @@
 "use client";
 import { ActivityLog } from "./survey-quality";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PortalUser } from "@/lib/portal-types";
 import { canManageClients } from "@/lib/access";
@@ -21,7 +20,6 @@ const jsonRequest = workspaceRequest;
 function dateLabel(date?: string) { return date ? new Date(date).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "No recent activity"; }
 
 export function PortalApp({ initialUser, signOutPath, onSignOut }: { initialUser: PortalUser; signOutPath: string; onSignOut?: () => void }) {
-  const router = useRouter();
   const [data, setData] = useState<Dashboard>({ user: initialUser, projects: [], clients: [], users: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -94,12 +92,14 @@ export function PortalApp({ initialUser, signOutPath, onSignOut }: { initialUser
       await context?.registerTool?.({ name: "open_pole_project", title: "Open pole project", description: "Open an assigned survey project by its exact ID.", inputSchema: { type: "object", properties: { projectId: { type: "string" } }, required: ["projectId"], additionalProperties: false }, annotations: { readOnlyHint: true, untrustedContentHint: false }, execute: async (input: unknown) => {
         const projectId = String((input as { projectId?: unknown })?.projectId ?? "");
         if (!data.projects.some((p) => p.id === projectId)) throw new Error("Project is not assigned to this account");
-        router.push(`/projects/${encodeURIComponent(projectId)}`); return { opened: true, projectId };
+        // Vinext production client navigation throws here; use a full document navigation.
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+        window.location.assign(`/projects/${encodeURIComponent(projectId)}`); return { opened: true, projectId };
       } }, { signal: lifecycle.signal });
     }
     void register().catch(() => undefined);
     return () => lifecycle.abort();
-  }, [data.projects, router]);
+  }, [data.projects]);
   useEffect(() => {
     if (!mobileNav) return;
     const sidebar = document.querySelector<HTMLElement>(".workspace-sidebar");
