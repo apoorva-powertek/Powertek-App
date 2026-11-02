@@ -7,6 +7,7 @@ import { PasswordUpdate, PortalLogin } from "@/components/portal-login";
 import { PortalApp } from "@/components/portal-app";
 import { ThemeControl } from "@/components/theme-control";
 import { recoveryDestination } from "@/lib/password-recovery";
+import { projectReturnPath } from "@/lib/workspace-navigation";
 
 export function WorkspaceEntry({ admin = false }: { admin?: boolean }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -19,20 +20,24 @@ export function WorkspaceEntry({ admin = false }: { admin?: boolean }) {
     if (destination) { window.location.replace(destination); return; }
     // Supabase consumes the fragment during getSession; preserve its purpose.
     const recoveryLink = new URLSearchParams(window.location.hash.slice(1)).get("type") === "recovery";
-    const supabase = createBrowserSupabase(); let alive = true; let generation = 0;
+    const supabase = createBrowserSupabase(); let alive = true; let generation = 0; let authId: string | null = null;
     async function resolve(next: Session | null) {
       const current = ++generation;
       if (!alive) return;
-      setSession(next); setUser(null); setError("");
+      const identityChanged = authId !== (next?.user.id ?? null);
+      authId = next?.user.id ?? null;
+      setSession(next); if (identityChanged) setUser(null); setError("");
       if (recoveryLink && next) { setRecovering(true); setPending(false); return; }
       if (!next) { setPending(false); return; }
-      setPending(true);
+      if (identityChanged) setPending(true);
       try {
         const { data, error: linkError } = await supabase.rpc("link_current_portal_user");
         if (!alive || current !== generation) return;
         const profile = Array.isArray(data) ? data[0] : data;
         if (linkError || !profile) throw new Error("Your account has no active Powertek invitation. Contact your administrator.");
-        if (!admin && profile.role === "admin") { window.location.replace("/admin"); return; }
+        const returnPath = projectReturnPath(window.location.href);
+        if (returnPath) { window.location.replace(returnPath); return; }
+        if (!admin && profile.role === "admin") { window.location.replace(`/admin${window.location.search}`); return; }
         setUser({ id: profile.id, authUserId: next.user.id, email: profile.email, displayName: profile.display_name, role: profile.role, status: profile.status });
       } catch (err) { if (alive && current === generation) setError(err instanceof Error ? err.message : "Could not verify access"); }
       finally { if (alive && current === generation) setPending(false); }

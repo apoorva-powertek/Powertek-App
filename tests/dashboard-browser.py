@@ -30,7 +30,7 @@ with sync_playwright() as p:
  page.get_by_role("button",name="Switch to dark mode").click();page.wait_for_timeout(250)
  assert page.locator("html").get_attribute("data-theme")=="dark"
  page.screenshot(path=str(OUTPUT/"admin-projects-dark.png"),full_page=True)
- page.reload();page.get_by_role("heading",name="A clearer view of everything.").wait_for()
+ page.reload();page.get_by_role("heading",name="Projects",exact=True).wait_for()
  assert page.locator("html").get_attribute("data-theme")=="dark"
  page.get_by_role("button",name="Invite people",exact=True).click()
  page.get_by_label("Full name").fill("Taylor Test")
