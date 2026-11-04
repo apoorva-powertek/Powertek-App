@@ -1,4 +1,4 @@
-import { authErrorResponse, requireProjectEditor } from "@/lib/supabase";
+import { authErrorResponse, requirePortalUser, requireProjectEditor } from "@/lib/supabase";
 
 type Context = { params: Promise<{ projectId: string }> };
 const safeFilename = (value: string) => value.replace(/[\\/\u0000-\u001f]/g, "_").replace(/\s+/g, " ").trim().slice(0, 180) || "file";
@@ -43,3 +43,16 @@ export async function PUT(request: Request, context: Context) {
   } catch (error) { return authErrorResponse(error); }
 }
 
+
+export async function GET(request: Request, context: Context) {
+  try {
+    const {projectId}=await context.params;const {client}=await requirePortalUser(request);
+    const offset=Number(new URL(request.url).searchParams.get("offset")??0);
+    if(!Number.isSafeInteger(offset)||offset<0||offset>100000)return Response.json({error:"Invalid file page."},{status:400});
+    const project=await client.from("projects").select("id").eq("id",projectId).maybeSingle();
+    if(project.error)throw project.error;if(!project.data)return Response.json({error:"Project files are unavailable."},{status:404});
+    const files=await client.from("project_files").select("id,filename,kind,object_key,size_bytes,created_at",{count:"exact"}).eq("project_id",projectId).order("created_at",{ascending:false}).order("id").range(offset,offset+49);
+    if(files.error)throw files.error;
+    return Response.json({files:files.data??[],total:files.count??0,nextOffset:offset+(files.data?.length??0)<(files.count??0)?offset+50:null});
+  }catch(error){return authErrorResponse(error);}
+}

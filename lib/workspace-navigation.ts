@@ -2,7 +2,7 @@ import { defaultFilters, type ProjectFilters } from "./dashboard";
 
 export const workspaceTabs = ["overview", "projects", "clients", "users", "import", "activity"] as const;
 export type WorkspaceTab = typeof workspaceTabs[number];
-export type WorkspaceLocation = { tab: WorkspaceTab; filters: ProjectFilters; view: "grid" | "list" };
+export type WorkspaceLocation = { tab: WorkspaceTab; filters: ProjectFilters; view: "grid" | "list"; uploadProjectId?: string };
 const filterParams: Record<keyof ProjectFilters, string> = { query: "q", clientId: "client", status: "status", progress: "progress", updatedAfter: "from", updatedBefore: "through", sort: "sort" };
 
 export function readWorkspaceLocation(href: string): WorkspaceLocation {
@@ -18,7 +18,7 @@ export function readWorkspaceLocation(href: string): WorkspaceLocation {
   for (const key of ["updatedAfter", "updatedBefore"] as const) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(filters[key])) filters[key] = "";
   }
-  return { tab: workspaceTabs.includes(requested) ? requested : "overview", filters, view: params.get("view") === "list" ? "list" : "grid" };
+  return { tab: workspaceTabs.includes(requested) ? requested : "overview", filters, uploadProjectId: params.get("project") ?? "", view: params.get("view") === "list" ? "list" : "grid" };
 }
 
 export function workspaceLocationHref(path: string, location: WorkspaceLocation): string {
@@ -27,6 +27,7 @@ export function workspaceLocationHref(path: string, location: WorkspaceLocation)
   for (const key of Object.keys(filterParams) as (keyof ProjectFilters)[]) {
     if (location.filters[key] !== defaultFilters[key]) params.set(filterParams[key], location.filters[key]);
   }
+  if (location.tab === "import" && location.uploadProjectId) params.set("project", location.uploadProjectId);
   if (location.view !== "grid") params.set("view", location.view);
   return `${path}${params.size ? `?${params}` : ""}`;
 }

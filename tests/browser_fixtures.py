@@ -40,4 +40,4 @@ def setup(context, role="admin", invite=False):
  return session
 
 def no_overflow(page):
- assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"), "Page has horizontal overflow"
+ assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"), "Page has horizontal overflow: "+str(page.evaluate("[...document.querySelectorAll('body *')].filter(e=>e.getBoundingClientRect().right>innerWidth+1&&getComputedStyle(e).position!=='fixed').slice(0,12).map(e=>({tag:e.tagName,cls:e.className,right:e.getBoundingClientRect().right}))"))

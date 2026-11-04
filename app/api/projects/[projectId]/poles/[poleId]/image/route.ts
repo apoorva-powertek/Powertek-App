@@ -9,9 +9,9 @@ export async function GET(request: Request, context: Context) {
     const { projectId, poleId } = await context.params;
     const result = await client.from("poles").select("image_key,image_filename").eq("id", poleId).eq("project_id", projectId).maybeSingle();
     if (result.error) throw result.error;
-    if (!result.data?.image_key) return Response.json({ error: "Original pole photo has not been migrated to Supabase Storage" }, { status: 404 });
+    if (!result.data?.image_key) return Response.json({ error: "No original photo has been uploaded for this pole." }, { status: 404 });
     const signed = await client.storage.from("project-files").createSignedUrl(result.data.image_key, 90);
-    if (signed.error || !signed.data?.signedUrl) return Response.json({ error: "Original pole photo is unavailable in secure storage" }, { status: 404 });
+    if (signed.error || !signed.data?.signedUrl) return Response.json({ error: "The original photo is missing from this project. Ask the project team to upload the matching original again." }, { status: 404 });
     return Response.redirect(signed.data.signedUrl, 302);
   } catch (error) { return authErrorResponse(error); }
 }

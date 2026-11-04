@@ -1,4 +1,5 @@
 export type DashboardProject = {
+  can_view?: boolean; published_at?: string | null;
   review_counts?: Partial<Record<"draft"|"uploaded"|"needs_review"|"approved"|"delivered",number>>;
   id: string; client_id: string; client_name: string; name: string; code: string;
   description: string; location_label: string; status: string; pole_count: number;
