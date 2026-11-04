@@ -132,7 +132,7 @@ with sync_playwright() as playwright:
  context=browser.new_context();setup(context)
  context.unroute("**/api/dashboard")
  context.route("**/api/dashboard",lambda route:route.fulfill(status=200,content_type="application/json",body=json.dumps(dict(user=user,projects=[],clients=[],users=[]))))
- page=context.new_page();page.goto(BASE_URL+"/admin");page.get_by_role("heading",name="Your portfolio is ready to grow").wait_for()
+ page=context.new_page();page.goto(BASE_URL+"/admin");page.get_by_role("heading",name="Your project library starts here").wait_for()
  page.get_by_role("button",name="Invite people",exact=True).click()
  assert page.get_by_role("button",name="Send invitation",exact=True).is_enabled()
  page.get_by_role("button",name="Projects 0",exact=True).click();page.get_by_role("button",name="New project",exact=True).click()

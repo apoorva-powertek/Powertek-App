@@ -4,6 +4,7 @@ import "./brand.css";
 import "./refinement.css";
 import "./modern.css";
 import "./workspace.css";
+import "./dashboard.css";
 
 export const metadata: Metadata = {
   title: "Powertek Utility Services | Transmission Engineering",
@@ -21,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="antialiased"><script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('powertek-theme');document.documentElement.dataset.theme=t==='dark'?'dark':'light'}catch(e){document.documentElement.dataset.theme='light'}})()` }} />{children}</body>
+      <body className="antialiased"><script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('powertek-theme');var m=t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';document.documentElement.dataset.theme=m;document.documentElement.style.colorScheme=m}catch(e){document.documentElement.dataset.theme='light'}})()` }} />{children}</body>
     </html>
   );
 }
