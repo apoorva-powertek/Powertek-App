@@ -64,13 +64,13 @@ with sync_playwright() as p:
   q.locator('.workspace-project-card').first.click();q.get_by_role('link',name='Projects',exact=True).click()
   q.get_by_role('heading',name='Projects',exact=True).wait_for()
   if role!='admin':
-   q.goto(BASE_URL+'/portal?tab=users');q.get_by_role('heading',name='A clearer view of everything.').wait_for()
+   q.goto(BASE_URL+'/portal?tab=users');q.get_by_role('heading',name='Workspace overview').wait_for()
    expect(q.locator('.workspace-topbar strong')).to_have_text('Overview')
   other.close()
  # Direct section links, mobile menu, and URL state stay usable at every width.
  for width in [320,375,768,1440]:
   page.set_viewport_size(dict(width=width,height=1000))
-  for name,heading in [('Overview','A clearer view of everything.'),('Projects 3','Projects'),('Clients','Clients'),('People & access','People & access'),('Activity history','Activity history'),('Upload data','Upload data')]:
+  for name,heading in [('Overview','Workspace overview'),('Projects 3','Projects'),('Clients','Clients'),('People & access','People & access'),('Activity history','Activity history'),('Upload data','Upload data')]:
    tab(page,name);page.locator('#workspace-title').filter(has_text=heading).wait_for();no_overflow(page)
  # Cancelling section navigation or Back preserves a pending upload preview.
  page.get_by_label('Pole locations',exact=True).set_input_files(dict(name='locations.csv',mimeType='text/csv',buffer=b'name,latitude,longitude,elevation\nP-1,30,-90,15\n'))
@@ -140,7 +140,7 @@ with sync_playwright() as p:
  context.close()
  context=browser.new_context();configure(context)
  page=context.new_page();page.goto(BASE_URL+'/portal?next=https%3A%2F%2Fexample.com')
- page.get_by_role('heading',name='A clearer view of everything.').wait_for();assert urlparse(page.url).netloc==urlparse(BASE_URL).netloc
+ page.get_by_role('heading',name='Workspace overview').wait_for();assert urlparse(page.url).netloc==urlparse(BASE_URL).netloc
  context.close()
  browser.close()
  print('Navigation checks passed: section URLs, filters/view persistence, Back/Forward, client/project returns across roles, mobile links, viewer filters, photo retry, report/print/error returns, safe sign-in destinations, and sign-out. No live writes occurred.')

@@ -12,7 +12,7 @@ with sync_playwright() as p:
  context.close()
  # Authenticated dashboard UI: fixtures never enter production code.
  context=browser.new_context(viewport={"width":1440,"height":1100});setup(context)
- page=context.new_page();page.goto(BASE_URL+"/admin");page.get_by_role("heading",name="A clearer view of everything.").wait_for()
+ page=context.new_page();page.goto(BASE_URL+"/admin");page.get_by_role("heading",name="Workspace overview").wait_for()
  page.get_by_role("cell",name="Fort Nelson Corridor FN-2026").wait_for()
  page.screenshot(path=str(OUTPUT/"admin-overview-light.png"),full_page=True);no_overflow(page)
  page.get_by_label("Filter by client").select_option("client-one")
@@ -62,7 +62,7 @@ with sync_playwright() as p:
  # Role-gated navigation and route boundary.
  for role in ["client","staff"]:
   context=browser.new_context(viewport={"width":1280,"height":900});setup(context,role)
-  page=context.new_page();page.goto(BASE_URL+"/portal");page.get_by_role("heading",name="A clearer view of everything.").wait_for()
+  page=context.new_page();page.goto(BASE_URL+"/portal");page.get_by_role("heading",name="Workspace overview").wait_for()
   assert page.get_by_role("button",name="People & access",exact=True).count()==0
   if role=="client": assert page.get_by_role("button",name="Clients",exact=True).count()==0
   page.goto(BASE_URL+"/admin");page.get_by_role("heading",name="Your client workspace is ready").wait_for()

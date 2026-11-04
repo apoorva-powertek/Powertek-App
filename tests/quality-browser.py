@@ -42,7 +42,7 @@ with sync_playwright() as p:
  browser=p.chromium.launch(executable_path="/usr/bin/chromium",args=["--no-sandbox"])
  context=browser.new_context(viewport={"width":1440,"height":1000});state=configure(context)
  page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
- page.goto(BASE_URL+"/admin");page.get_by_role('heading',name='A clearer view of everything.').wait_for()
+ page.goto(BASE_URL+"/admin");page.get_by_role('heading',name='Workspace overview').wait_for()
  page.get_by_role('button',name='Upload data',exact=True).click()
  page.get_by_label('Pole locations',exact=True).set_input_files(dict(name='bad.csv',mimeType='text/csv',buffer=b'name,latitude,longitude,elevation\nP-1,,-90,15\n'))
  page.get_by_role('button',name='Validate and preview',exact=True).click()

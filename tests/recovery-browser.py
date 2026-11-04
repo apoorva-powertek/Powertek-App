@@ -39,7 +39,7 @@ with sync_playwright() as p:
  with page.expect_request(lambda r:'/auth/v1/user' in r.url and r.method=='PUT') as update:
   page.get_by_role('button',name='Update password',exact=True).click()
  assert update.value.post_data_json['password']=='Synthetic-password-12'
- page.wait_for_url('**/admin');page.get_by_role('heading',name='A clearer view of everything.').wait_for()
+ page.wait_for_url('**/admin');page.get_by_role('heading',name='Workspace overview').wait_for()
  context.close()
  # Legacy implicit email callbacks must retain intent through root/admin/portal.
  for path in ['/','/portal','/admin']:
