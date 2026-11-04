@@ -1,6 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
 import {createSurveyDatabase} from './survey-fixture.mjs';import {adminId as admin,staffId as staff,clientId as client} from './permission-fixture.mjs';
 const db=await createSurveyDatabase();await db.exec(await readFile(new URL('../supabase/migrations/20261104090000_project_workflow_and_notifications.sql',import.meta.url),'utf8'));
+await db.exec(await readFile(new URL('../supabase/migrations/20261104091000_gate_existing_project_updates.sql',import.meta.url),'utf8'));
 async function asUser(id){await db.exec(`reset role;select set_config('request.jwt.claim.sub','${id}',false);set role authenticated`);}
 await asUser(admin);await db.query(`select public.save_portal_access('staff@example.com','Staff','staff',false,'[{"projectId":"p1","canUpload":true}]')`);await db.query(`select public.save_portal_access('client@example.com','Client','client',false,'[{"projectId":"p1"}]')`);
 let projectId;const releaseId='50000000-0000-4000-8000-000000000001';
@@ -86,3 +87,11 @@ test('workflow HTTP boundary rejects malformed requests, role escalation and sta
  assert.equal((await db.query('select published_at from public.projects where id=$1',[projectId])).rows[0].published_at,null,'source-file additions also withdraw a release');
  delete globalThis.__workflowHarness;
 });
+
+ test('legacy projects keep existing access until their next survey change, then require a new release',async()=>{
+ await asUser(client);assert.equal((await db.query("select * from public.projects where id='p1'")).rows.length,1);
+ await asUser(staff);await db.query("update public.poles set latitude=latitude+.001 where id='pole1'");
+ assert.equal((await db.query("select requires_approval from public.projects where id='p1'")).rows[0].requires_approval,true);
+ await asUser(client);assert.equal((await db.query("select * from public.projects where id='p1'")).rows.length,0);
+ assert.equal((await db.query('select public.list_client_projects() as feed')).rows[0].feed.find(p=>p.id==='p1').can_view,false);
+ });

@@ -1,6 +1,6 @@
 # Employee uploads and client delivery
 
-Apply `20261104090000_project_workflow_and_notifications.sql` after the survey-quality migration before deploying the application. It is transactional and preserves existing clients, projects, assignments, records, measurements, source files, and timestamps. Existing projects retain their previous client visibility until explicitly released through this workflow. New projects start private to internal users.
+Apply `20261104090000_project_workflow_and_notifications.sql` and `20261104091000_gate_existing_project_updates.sql` after the survey-quality migration before deploying the application. It is transactional and preserves existing clients, projects, assignments, records, measurements, source files, and timestamps. Existing projects retain their previous client visibility until their next survey/source-file change or explicit release through this workflow. New projects start private to internal users.
 
 ## Using the dashboard
 
