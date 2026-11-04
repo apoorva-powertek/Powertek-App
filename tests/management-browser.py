@@ -86,6 +86,9 @@ with sync_playwright() as playwright:
  assert form.get_by_label("Project name",exact=True).input_value()=="Inline Client Survey"
  assert form.get_by_label("Client",exact=True).input_value()==clients[-1]["id"]
  form.get_by_role("button",name="Create project",exact=True).click()
+ page.get_by_role("heading",name="Upload data",exact=True).wait_for()
+ assert page.get_by_label("Destination project",exact=True).input_value()==projects[-1]["id"]
+ page.get_by_role("button",name=f"Projects {len(projects)}",exact=True).click()
  page.get_by_role("heading",name="Inline Client Survey",exact=True).wait_for()
  page.get_by_role("button",name="Manage Inline Client Survey",exact=True).click()
  form=page.get_by_role("form",name="Edit project",exact=True)

@@ -174,10 +174,12 @@ function mimeFromName(name: string) {
 
 
 export type SurveyPackage = { id: string; projectId: string; sourceName: string; poles: ImportPole[]; files: (ImportFileManifest & { blob: Blob })[]; warnings: string[]; existing: string[] };
-export async function readSurveyPackage(projectId: string, spreadsheet: File, jsonFiles: File[], imageFiles: File[], existingNames: string[]): Promise<SurveyPackage> {
-  if ([spreadsheet,...jsonFiles,...imageFiles].reduce((sum,f)=>sum+f.size,0)>524288000) throw new Error("This package exceeds 500 MB. Split it into smaller batches.");
-  if ([spreadsheet,...jsonFiles,...imageFiles].some(f=>!/\.zip$/i.test(f.name)&&f.size>maxSourceFileBytes)) throw new Error("Each source file must be 50 MB or smaller. Split large files before importing.");
-  const poles = rowsToPoles(await readSpreadsheet(spreadsheet));
+export async function readSurveyPackage(projectId: string, spreadsheet: File | null, jsonFiles: File[], imageFiles: File[], existingNames: string[], existingPoles: ImportPole[] = []): Promise<SurveyPackage> {
+  const selected = [...new Set([...(spreadsheet ? [spreadsheet] : []), ...jsonFiles, ...imageFiles])];
+  if (selected.reduce((sum,f)=>sum+f.size,0)>524288000) throw new Error("This package exceeds 500 MB. Split it into smaller batches.");
+  if (selected.some(f=>!/\.zip$/i.test(f.name)&&f.size>maxSourceFileBytes)) throw new Error("Each source file must be 50 MB or smaller. Split large files before importing.");
+  const poles = spreadsheet ? rowsToPoles(await readSpreadsheet(spreadsheet)) : structuredClone(existingPoles);
+  if (!poles.length) throw new Error("Add a location spreadsheet for a new project. Existing projects can receive matching photos or measurements without a new spreadsheet.");
   let validated = validateSurveyPoles(poles);
   if (validated.errors.length) throw new Error(validated.errors.slice(0,10).join("\n"));
   const jsonEntries = await entriesFromFiles(jsonFiles,/\.json$/i), imageEntries = await entriesFromFiles(imageFiles,/\.(jpe?g|png|webp|heic)$/i);
@@ -191,10 +193,10 @@ export async function readSurveyPackage(projectId: string, spreadsheet: File, js
     if (!matched) { warnings.push(`${entry.name}: no exact pole ID match; saved as an unlinked source file.`); continue; }
     if (measurements.has(matched.poleName)) throw new Error(`Multiple JSON files match ${matched.poleName}. Keep one measurement file per pole.`);
     measurements.set(matched.poleName,measurement); filePoles.set(entry.name,matched.poleName);
-    Object.assign(matched,measurement,{poleName:matched.poleName});
+    Object.assign(matched,measurement,{poleName:matched.poleName,imageFilename:measurement.imageFilename??matched.imageFilename,imageWidth:measurement.imageWidth??matched.imageWidth,imageHeight:measurement.imageHeight??matched.imageHeight});
   }
   const id=crypto.randomUUID(), safe=(name:string)=>name.replace(/[\\/\u0000-\u001f]/g,"_").slice(0,180);
-  const files: SurveyPackage["files"]=[{ name:safe(spreadsheet.name),kind:"spreadsheet",size:spreadsheet.size,type:spreadsheet.type||mimeFromName(spreadsheet.name),objectKey:`${projectId}/imports/${id}/0-${safe(spreadsheet.name)}`,blob:spreadsheet }];
+  const files: SurveyPackage["files"]=spreadsheet ? [{ name:safe(spreadsheet.name),kind:"spreadsheet",size:spreadsheet.size,type:spreadsheet.type||mimeFromName(spreadsheet.name),objectKey:`${projectId}/imports/${id}/0-${safe(spreadsheet.name)}`,blob:spreadsheet }] : [];
   const imagePoles=new Set<string>();
   for (const [kind,entries] of [["json",jsonEntries],["image",imageEntries]] as const) for (const entry of entries) {
     let poleName = kind==="json" ? filePoles.get(entry.name) : undefined;
@@ -210,11 +212,31 @@ export async function readSurveyPackage(projectId: string, spreadsheet: File, js
     files.push({name:safe(entry.name),kind,size:entry.bytes.byteLength,type:entry.type,poleName,objectKey:`${projectId}/imports/${id}/${files.length}-${safe(entry.name)}`,blob:new Blob([entry.bytes.buffer as ArrayBuffer],{type:entry.type})});
   }
   if (files.length>10000 || files.reduce((sum,f)=>sum+f.size,0)>524288000) throw new Error("Expanded package exceeds 500 MB or 10,000 files. Use smaller batches.");
-  validated=validateSurveyPoles(poles);
+  const touched = new Set(files.map(f=>f.poleName).filter(Boolean));
+  const changedPoles = spreadsheet ? poles : poles.filter(p=>touched.has(p.poleName));
+  if (!changedPoles.length) throw new Error("No files match an existing pole. Use exact pole IDs or add a location spreadsheet for new poles.");
+  validated=validateSurveyPoles(changedPoles);
   if(validated.errors.length) throw new Error(validated.errors.slice(0,10).join("\n"));
   const existing=validated.poles.filter(p=>existingNames.includes(p.poleName)).map(p=>p.poleName);
   if(existing.length) warnings.push(`${existing.length} existing poles will be updated. Their attachments will be replaced and their review stage will return to Uploaded.`);
   const missingPhotos=poles.length-imagePoles.size;
   if(missingPhotos) warnings.push(`${missingPhotos} poles have no new matching photo. Existing photos will be kept; approval requires a stored photo and measured attachments.`);
-  return {id,projectId,sourceName:spreadsheet.name.slice(0,180),poles:validated.poles,files,warnings,existing};
+  return {id,projectId,sourceName:spreadsheet?.name.slice(0,180) ?? "Additional survey files",poles:validated.poles,files,warnings,existing};
+}
+
+export async function organizeSurveyFiles(files: File[]) {
+  const locations=files.filter(f=>/\.(csv|xlsx?)$/i.test(f.name));
+  const archives=files.filter(f=>/\.zip$/i.test(f.name));
+  for(const archive of archives){
+    if(archive.size>524288000)throw new Error("ZIP packages must be 500 MB or smaller.");
+    const {unzipSync}=await import("fflate");
+    const unpacked=unzipSync(new Uint8Array(await archive.arrayBuffer()),{filter:entry=>{
+      if(!/\.(csv|xlsx?)$/i.test(entry.name)||entry.name.includes('__MACOSX/'))return false;
+      if(entry.originalSize>maxSourceFileBytes)throw new Error("Location files must be 50 MB or smaller.");
+      return true;
+    }});
+    for(const [name,bytes] of Object.entries(unpacked))locations.push(new File([bytes.buffer as ArrayBuffer],name.split('/').pop()||name,{type:mimeFromName(name)}));
+  }
+  if(locations.length>1)throw new Error("This package contains multiple location spreadsheets. Select one spreadsheet and its matching survey files.");
+  return {spreadsheet:locations[0]??null,jsonFiles:files.filter(f=>/\.(json|zip)$/i.test(f.name)),imageFiles:files.filter(f=>/\.(jpe?g|png|webp|heic|zip)$/i.test(f.name))};
 }

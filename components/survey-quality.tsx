@@ -34,10 +34,10 @@ export function ActivityLog({projectId,revision=0}:{projectId?:string;revision?:
     {next&&<button className="workspace-button secondary" disabled={busy} onClick={()=>void load(next)}>Load older activity</button>}{busy&&<p role="status">Loading history…</p>}
   </section>;
 }
-export function SurveyReview({pole,admin,canEdit,onChanged}:{pole:PoleRecord;admin:boolean;canEdit:boolean;onChanged:()=>Promise<void>}) {
+export function SurveyReview({pole,admin,canEdit,onChanged,compact=false}:{compact?:boolean;pole:PoleRecord;admin:boolean;canEdit:boolean;onChanged:()=>Promise<void>}) {
   const [note,setNote]=useState(""),[error,setError]=useState(""),[busy,setBusy]=useState(false);
   const stage=pole.reviewStage??"uploaded";
-  const [expanded,setExpanded]=useState(stage==="needs_review"&&canEdit);
+  const [expanded,setExpanded]=useState(!compact&&stage==="needs_review"&&canEdit);
   async function transition(target:ReviewStage){
     if(target==='uploaded'&&stage!=='draft'&&!note.trim()){setError("Add a reason before returning this survey to Uploaded.");return;}
     setBusy(true);setError("");
@@ -47,7 +47,7 @@ export function SurveyReview({pole,admin,canEdit,onChanged}:{pole:PoleRecord;adm
     }catch(e){setError(e instanceof Error?e.message:"Could not update review.");}finally{setBusy(false);}
   }
   const labels:Record<ReviewStage,string>={draft:"Draft",uploaded:stage==='draft'?"Mark uploaded":"Return to uploaded",needs_review:"Submit for review",approved:"Approve survey",delivered:"Mark delivered"};
-  return <section className="quality-panel review-panel" aria-label="Survey review"><header><div><p className="eyebrow">SURVEY REVIEW · {pole.poleName}</p><h2>{reviewLabels[stage]}</h2></div><div className="quality-actions"><span className={`review-badge stage-${stage}`}>{reviewLabels[stage]}</span><button className="workspace-button secondary" aria-expanded={expanded} onClick={()=>setExpanded(!expanded)}>{expanded?"Hide review details":"Review details"}</button></div></header>
+  return <section className={`quality-panel review-panel ${compact?"compact-review":""}`} aria-label="Survey review"><header><div><p className="eyebrow">SURVEY REVIEW · {pole.poleName}</p><h2>{compact?"Survey review":reviewLabels[stage]}</h2></div><div className="quality-actions"><span className={`review-badge stage-${stage}`}>{reviewLabels[stage]}</span><button className="workspace-button secondary" aria-expanded={expanded} onClick={()=>setExpanded(!expanded)}>{expanded?"Hide review details":"Review details"}</button></div></header>
     {expanded&&<><ol className="review-steps">{reviewStages.map((s,i)=><li key={s} aria-current={s===stage?"step":undefined} className={i<=reviewStages.indexOf(stage)?"reached":""}>{reviewLabels[s]}</li>)}</ol>
     <p>Data completeness and engineering approval are tracked separately. Approval requires an uploaded photo and measured attachments.</p>
     {canEdit&&<><label>Review note <small>(required when returning a reviewed survey)</small><textarea value={note} maxLength={1000} onChange={e=>setNote(e.target.value)} placeholder="Record a review decision or explain the changes needed"/></label>{error&&<p className="error-banner" role="alert">{error}</p>}<div className="quality-actions">{reviewActions(stage,admin).map(target=><button className={`workspace-button ${target==='uploaded'?'secondary':'primary'}`} key={target} disabled={busy} onClick={()=>void transition(target)}>{busy?"Saving…":labels[target]}</button>)}<button className="workspace-button secondary" disabled={busy} onClick={()=>void onChanged().catch(()=>setError("Could not refresh survey."))}>Refresh survey</button></div>{!admin&&<small>Administrators approve surveys and mark them delivered.</small>}</>}</>}

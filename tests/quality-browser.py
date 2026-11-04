@@ -58,10 +58,10 @@ with sync_playwright() as p:
  for width in [320,375,768,1440]:
   page.set_viewport_size(dict(width=width,height=1000));no_overflow(page)
  page.set_viewport_size(dict(width=1440,height=1000));page.screenshot(path=str(OUTPUT/'import-preview.png'),full_page=True)
- page.get_by_role('button',name='Confirm and publish import',exact=True).click()
+ page.get_by_role('button',name='Confirm and upload',exact=True).click()
  expect(page.get_by_role('alert')).to_contain_text('Connection interrupted')
  assert state['commits']==0 and len(state['files'])==2
- page.get_by_role('button',name='Retry and publish',exact=True).click()
+ page.get_by_role('button',name='Retry upload',exact=True).click()
  page.get_by_role('link',name='Open project and review surveys').wait_for()
  assert len(state['files'])==3 and state['commits']==1
  assert len(set(state['files']))==3
@@ -83,6 +83,7 @@ with sync_playwright() as p:
   page.set_viewport_size(dict(width=width,height=1000));no_overflow(page)
  page.set_viewport_size(dict(width=1440,height=1000));page.screenshot(path=str(OUTPUT/'survey-review.png'),full_page=True)
  page.locator('html').evaluate("el=>el.dataset.theme='dark'");page.wait_for_timeout(250);page.screenshot(path=str(OUTPUT/'survey-review-dark.png'),full_page=True)
+ page.get_by_role('button',name='Close dialog',exact=True).click()
  page.get_by_label('Filter by review stage').select_option('approved')
  assert page.locator('.pole-list>button').count()==0
  page.get_by_label('Filter by review stage').select_option('uploaded')
@@ -96,6 +97,7 @@ with sync_playwright() as p:
   context=browser.new_context(viewport=dict(width=375,height=950));state=configure(context,role);state['stage']='needs_review'
   page=context.new_page();page.goto(BASE_URL+'/projects/project-one')
   page.get_by_label('Survey review').wait_for();no_overflow(page)
+  page.get_by_role('button',name='Review details',exact=True).click()
   assert page.get_by_role('button',name='Approve survey',exact=True).count()==0
   assert page.get_by_role('button',name='Mark delivered',exact=True).count()==0
   assert page.get_by_role('button',name='Return to uploaded',exact=True).count()==(1 if role=='staff' else 0)
