@@ -9,7 +9,7 @@ export default function PoleReportPage() {
   const params = useParams<{ projectId: string; poleId: string }>();
   const [record, setRecord] = useState<{ pole: PoleRecord; project: { name: string; client_name: string } } | null>(null);
   const [error, setError] = useState("");
-  const backLink = <a className="workspace-button secondary no-print" href={`/projects/${encodeURIComponent(params.projectId)}`}>Back to project</a>;
+  const backLink = <a className="workspace-button secondary no-print" href={`/projects/${encodeURIComponent(params.projectId)}?section=explore&pole=${encodeURIComponent(params.poleId)}&view=photo`}>Back to project</a>;
   useEffect(() => { let active = true; void authenticatedFetch(`/api/projects/${encodeURIComponent(params.projectId)}/poles`).then(async (response) => { const data = await response.json() as { error?: string }; if (!response.ok) throw new Error(data.error || "Could not load pole report"); return data; }).then((data) => { const payload = data as { poles?: PoleRecord[]; project: { name: string; client_name: string } }; const pole = payload.poles?.find((item: PoleRecord) => item.id === params.poleId); if (!pole) throw new Error("Pole not found"); if (active) setRecord({ pole, project: payload.project }); }).catch((err) => { if (active) setError(err instanceof Error ? err.message : "Could not load pole report"); }); return () => { active = false; }; }, [params.projectId, params.poleId]);
   if (!record) return <main className="report-page">{backLink}<p role={error ? "alert" : "status"}>{error || "Loading report…"}</p></main>;
   const { pole, project } = record;

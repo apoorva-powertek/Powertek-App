@@ -22,7 +22,7 @@ with sync_playwright() as p:
  page.go_back();page.get_by_role('heading',name='Clients',exact=True).wait_for()
  page.go_forward();page.get_by_role('heading',name='Projects',exact=True).wait_for()
  page.locator('.workspace-project-card').filter(has_text='Fort Nelson Corridor').click()
- page.get_by_label('Survey review',exact=True).wait_for()
+ page.get_by_role('heading',name='Fort Nelson Corridor',exact=True).wait_for()
  page.get_by_role('link',name='Projects',exact=True).click()
  page.get_by_role('heading',name='Projects',exact=True).wait_for();assert url_tab(page)=='projects'
  tab(page,'Overview');page.get_by_role('button',name='Explore projects',exact=True).wait_for()
@@ -65,13 +65,12 @@ with sync_playwright() as p:
  expect(page.get_by_label('Full name',exact=True)).to_have_value('Unsaved teammate')
  # Viewer filters toggle, missing-photo retry, and print/report return links.
  page.set_viewport_size(dict(width=1440,height=1000));page.goto(BASE_URL+'/projects/project-one')
- page.get_by_role('button',name='Hide filters',exact=True).click()
- expect(page.get_by_label('Filter by review stage')).to_be_hidden()
- page.get_by_role('button',name='Show filters',exact=True).click()
+ page.get_by_role('button',name='Filters',exact=True).click()
  page.get_by_label('Filter by review stage').select_option('draft')
- expect(page.locator('.pole-list>button')).to_have_count(1)
+ expect(page.get_by_role('button',name='Open pole P-2',exact=True)).to_be_visible()
+ assert page.get_by_role('button',name='Open pole P-1',exact=True).count()==0
  page.get_by_label('Filter by review stage').select_option('all')
- expect(page.locator('.pole-list>button')).to_have_count(2)
+ page.get_by_role('button',name='Open pole P-1',exact=True).click()
  page.get_by_role('button',name='Photo',exact=True).click()
  page.get_by_role('button',name='Retry photo',exact=True).wait_for()
  state['photoReady']=True;before=state['images'];page.get_by_role('button',name='Retry photo',exact=True).click()
@@ -83,7 +82,7 @@ with sync_playwright() as p:
  report=opened.value;report.get_by_role('heading',name='P-1',exact=True).wait_for()
  report.evaluate('window.print=()=>window.__printed=true')
  report.get_by_role('button',name='Print / Save PDF',exact=True).click();assert report.evaluate('window.__printed')
- report.get_by_role('link',name='Back to project',exact=True).click();report.get_by_label('Survey review',exact=True).wait_for();report.close()
+ report.get_by_role('link',name='Back to project',exact=True).click();report.get_by_label('Select pole',exact=True).wait_for();expect(report.get_by_label('Select pole',exact=True)).to_have_value('pole-one');report.close()
  state['reportError']=True
  report=context.new_page();report.goto(BASE_URL+'/projects/project-one/poles/pole-one/report')
  expect(report.get_by_role('alert')).to_have_text('Report service unavailable')
@@ -108,7 +107,7 @@ with sync_playwright() as p:
  # Signed-in users returning from sign-in are sent to the intended project only.
  context=browser.new_context();configure(context)
  page=context.new_page();page.goto(BASE_URL+'/portal?next=%2Fprojects%2Fproject-one')
- page.get_by_label('Survey review',exact=True).wait_for();assert urlparse(page.url).path=='/projects/project-one'
+ page.get_by_role('heading',name='Fort Nelson Corridor',exact=True).wait_for();assert urlparse(page.url).path=='/projects/project-one'
  context.close()
  context=browser.new_context();configure(context)
  page=context.new_page();page.goto(BASE_URL+'/portal?next=https%3A%2F%2Fexample.com')

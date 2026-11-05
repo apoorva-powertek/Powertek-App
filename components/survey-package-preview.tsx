@@ -4,8 +4,8 @@
 import {useEffect,useState} from "react";
 import {FileImage,FileSpreadsheet,FileJson2} from "lucide-react";
 import type {SurveyPackage} from "@/lib/survey-import-browser";
-export function SurveyPackagePreview({pack}:{pack:SurveyPackage}){
- const [tab,setTab]=useState('records');
+export function SurveyPackagePreview({pack,initialTab="records"}:{pack:SurveyPackage;initialTab?:"records"|"photos"|"files"}){
+ const [tab,setTab]=useState(initialTab);
  const images=pack.files.filter(f=>f.kind==='image');
  return <><div className="preview-tabs" role="tablist" aria-label="Package preview"><button role="tab" aria-selected={tab==='records'} onClick={()=>setTab('records')}>Records ({pack.poles.length})</button><button role="tab" aria-selected={tab==='photos'} onClick={()=>setTab('photos')}>Photos ({images.length})</button><button role="tab" aria-selected={tab==='files'} onClick={()=>setTab('files')}>Files ({pack.files.length})</button></div>
  {tab==='records'&&<div className="quality-table" role="region" aria-label="Survey records preview" tabIndex={0}><table><thead><tr><th>Pole</th><th>Latitude</th><th>Longitude</th><th>Attachments</th></tr></thead><tbody>{pack.poles.slice(0,50).map(p=><tr key={p.poleName}><td>{p.poleName}</td><td>{p.latitude}</td><td>{p.longitude}</td><td>{p.attachments?.length??0}</td></tr>)}</tbody></table>{pack.poles.length>50&&<p>Showing 50 of {pack.poles.length} validated records.</p>}</div>}

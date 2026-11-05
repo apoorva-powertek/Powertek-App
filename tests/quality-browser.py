@@ -66,6 +66,8 @@ with sync_playwright() as p:
  assert len(state['files'])==3 and state['commits']==1
  assert len(set(state['files']))==3
  page.get_by_role('link',name='Open project and review surveys').click()
+ page.get_by_role('button',name='Survey explorer',exact=True).click()
+ page.get_by_role('button',name='Review',exact=True).click()
  page.get_by_role('button',name='Review details',exact=True).click()
  page.get_by_role('button',name='Submit for review',exact=True).click()
  page.get_by_role('button',name='Approve survey',exact=True).wait_for()
@@ -85,9 +87,11 @@ with sync_playwright() as p:
  page.locator('html').evaluate("el=>el.dataset.theme='dark'");page.wait_for_timeout(250);page.screenshot(path=str(OUTPUT/'survey-review-dark.png'),full_page=True)
  page.get_by_role('button',name='Close dialog',exact=True).click()
  page.get_by_label('Filter by review stage').select_option('approved')
- assert page.locator('.pole-list>button').count()==0
+ assert page.get_by_label('Select pole',exact=True).locator('option').count()==1
+ expect(page.get_by_label('Select pole',exact=True)).to_contain_text('No matching poles')
  page.get_by_label('Filter by review stage').select_option('uploaded')
- assert page.locator('.pole-list>button').count()==1
+ assert page.get_by_label('Select pole',exact=True).locator('option').count()==1
+ assert page.get_by_label('Select pole',exact=True).input_value()!=''
  page.goto(BASE_URL+'/admin');page.get_by_role('button',name='Activity history',exact=True).click()
  expect(page.get_by_label('Activity history')).to_contain_text('Recheck primary attachment clearance')
  page.set_viewport_size(dict(width=375,height=1000));no_overflow(page)
@@ -96,8 +100,8 @@ with sync_playwright() as p:
  for role in ['staff','client']:
   context=browser.new_context(viewport=dict(width=375,height=950));state=configure(context,role);state['stage']='needs_review'
   page=context.new_page();page.goto(BASE_URL+'/projects/project-one')
-  page.get_by_label('Survey review').wait_for();no_overflow(page)
-  page.get_by_role('button',name='Review details',exact=True).click()
+  page.get_by_role('button',name='Survey explorer',exact=True).click();page.get_by_role('button',name='Review',exact=True).click();page.get_by_label('Survey review').wait_for();no_overflow(page)
+  if page.get_by_role('button',name='Review details',exact=True).count():page.get_by_role('button',name='Review details',exact=True).click()
   assert page.get_by_role('button',name='Approve survey',exact=True).count()==0
   assert page.get_by_role('button',name='Mark delivered',exact=True).count()==0
   assert page.get_by_role('button',name='Return to uploaded',exact=True).count()==(1 if role=='staff' else 0)

@@ -3,12 +3,12 @@ import {useCallback,useEffect,useRef,useState} from 'react';
 import {Check,ClipboardCheck,CloudUpload,RefreshCw,Send,X} from 'lucide-react';
 import {workspaceRequest} from '@/lib/workspace-request';
 import {ProjectWorkflowSteps} from './project-workflow-steps';
-export function WorkspaceDialog({title,onClose,children}:{title:string;onClose:()=>void;children:React.ReactNode}){
+export function WorkspaceDialog({title,onClose,children,closeDisabled=false}:{title:string;onClose:()=>void;children:React.ReactNode;closeDisabled?:boolean}){
  const ref=useRef<HTMLDivElement>(null);
  useEffect(()=>{const previous=document.activeElement as HTMLElement|null;const overflow=document.body.style.overflow;document.body.style.overflow='hidden';ref.current?.focus();
  const key=(event:KeyboardEvent)=>{if(event.key==='Escape')onClose();if(event.key==='Tab'){const items=Array.from(ref.current?.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],input:not([disabled]),select,textarea,[tabindex="0"]')??[]).filter(el=>el.getClientRects().length);const first=items[0],last=items[items.length-1];if(event.shiftKey&&(document.activeElement===first||document.activeElement===ref.current)){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}};document.addEventListener('keydown',key);
  return()=>{document.body.style.overflow=overflow;document.removeEventListener('keydown',key);previous?.focus();};},[onClose]);
- return <div className="workflow-dialog-backdrop" onClick={e=>{if(e.target===e.currentTarget)onClose();}}><div ref={ref} className="workflow-dialog" role="dialog" aria-modal="true" aria-label={title} tabIndex={-1}><header><div><p className="eyebrow">PROJECT WORKFLOW</p><h2>{title}</h2></div><button className="workspace-button secondary" aria-label="Close dialog" onClick={onClose}><X size={18}/></button></header>{children}</div></div>;
+ return <div className="workflow-dialog-backdrop" onClick={e=>{if(e.target===e.currentTarget)onClose();}}><div ref={ref} className="workflow-dialog" role="dialog" aria-modal="true" aria-label={title} tabIndex={-1}><header><div><p className="eyebrow">PROJECT WORKFLOW</p><h2>{title}</h2></div><button className="workspace-button secondary" aria-label="Close dialog" disabled={closeDisabled} onClick={onClose}><X size={18}/></button></header>{children}</div></div>;
 }
 type Workflow={project:{id:string;name:string;updatedAt:string;publishedAt:string|null;status:string};counts:{total:number;uploaded:number;needsReview:number;approved:number;missingPhotos:number;missingMeasurements:number};recipients:{id:string;name:string;email:string}[];admin:boolean};
 export function ProjectWorkflowDialog({projectId,onClose,onChanged}:{projectId:string;onClose:()=>void;onChanged:()=>Promise<void>}){

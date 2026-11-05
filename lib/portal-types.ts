@@ -23,6 +23,7 @@ export type AttachmentRecord = {
 };
 
 export type PoleRecord = {
+  photoAvailable?: boolean;
   id: string;
   projectId: string;
   reviewStage?: import("./survey-quality").ReviewStage;
