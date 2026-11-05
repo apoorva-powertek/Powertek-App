@@ -5,7 +5,7 @@ import "./refinement.css";
 import "./modern.css";
 import "./workspace.css";
 import "./dashboard.css";
-import "./project-viewer.css";
+import "./project-room.css";
 
 export const metadata: Metadata = {
   title: "Powertek Utility Services | Transmission Engineering",
