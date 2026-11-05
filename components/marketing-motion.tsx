@@ -5,11 +5,11 @@ import { useEffect } from "react";
 /** Enhance the server-rendered page without hiding content when JavaScript is unavailable. */
 export function MarketingMotion() {
   useEffect(() => {
-    const root = document.querySelector<HTMLElement>(".brand-site");
+    const root = document.querySelector<HTMLElement>(".powertek-home");
     if (!root) return;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const precisePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
-    const hero = root.querySelector<HTMLElement>(".site-hero");
+    const hero = root.querySelector<HTMLElement>(".home-hero");
     const targets = [...root.querySelectorAll<HTMLElement>("[data-reveal]")];
     let scrollFrame = 0;
     let pointerFrame = 0;

@@ -3,23 +3,29 @@
 import { ThemeControl } from "@/components/theme-control";
 import Image from "next/image";
 import { ArrowUpRight, LockKeyhole, Menu, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const navigation = [
   { href: "#services", label: "Our expertise" },
   { href: "#approach", label: "Our approach" },
-  { href: "#workspace", label: "Client workspace" },
+  { href: "#workspace", label: "Workspace preview" },
+  { href: "#contact", label: "Contact" },
 ];
 
 export function MarketingHeader({ portalSignInUrl }: { portalSignInUrl: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [ready,setReady]=useState(false);
+  const toggle=useRef<HTMLButtonElement>(null);
+  const open=useRef(false);
+  useEffect(()=>{open.current=menuOpen;},[menuOpen]);
 
   useEffect(() => {
+    const timer=window.setTimeout(()=>setReady(true),0);
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
+      if (event.key === "Escape" && open.current) {setMenuOpen(false);toggle.current?.focus();}
     };
     window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
+    return () => {window.clearTimeout(timer);window.removeEventListener("keydown", closeOnEscape);};
   }, []);
 
   return (
@@ -34,6 +40,8 @@ export function MarketingHeader({ portalSignInUrl }: { portalSignInUrl: string }
       <a className="brand-button navy header-sign-in" href={portalSignInUrl}><LockKeyhole size={15} /> Client sign in <ArrowUpRight size={16} /></a>
       <button
         className="mobile-menu-toggle"
+        ref={toggle}
+        disabled={!ready}
         type="button"
         aria-expanded={menuOpen}
         aria-controls="mobile-navigation"
