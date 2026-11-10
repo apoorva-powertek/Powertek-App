@@ -11,7 +11,7 @@ web
 - Administrators manage clients, projects, invitations, people, permissions and project assignments. They review survey work and control its release to clients.
 - Internal employees upload and extend authorised projects, inspect records and submit work for administrator review. They must be able to do this in the application without operating the database or storage backend.
 - Invited clients sign in to inspect assigned projects, check notifications and download available project files and reports.
-- Public website visitors evaluate Powertek's engineering and inspection capabilities, explore the product preview, contact the company or enter the client workspace.
+- Public website visitors evaluate Powertek's engineering and inspection capabilities, see client dashboard imagery, contact the company or enter the client workspace.
 
 ## Product Purpose
 
@@ -46,7 +46,7 @@ Additional comparative claims, performance guarantees, market-leadership claims 
 - File names and imported image references do not establish photo availability. Confirm the original file exists; explain unavailable files and give editors an upload/recovery action. Never replace missing survey evidence with a fabricated photo.
 - Preserve record identity, measurements and original file bytes during supported upload/retry flows. Do not silently omit unavailable files from exports.
 - Existing package limits and retry behaviour are implementation constraints documented in docs/project-delivery.md and docs/survey-quality-workflow.md. Keep those documents consistent when changing upload or download limits.
-- The public product preview uses fictional project data and genuine client application components, without a visible sample-data label as requested by the user. It must not fetch or reveal private customer records, account details or storage URLs.
+- The public website uses static screenshots of the real client dashboard with fictional project data, without a visible sample-data label as requested by the user. There are no interactive workspace previews, project controls or tour downloads on the website. Its dashboard graphics must not fetch or reveal private customer records, account details or storage URLs.
 - Password-reset links must reach the password-setting screen. Navigation, return paths, downloads, filters and primary actions must function across supported screen sizes.
 
 ## Brand Commitments
@@ -60,7 +60,7 @@ Additional comparative claims, performance guarantees, market-leadership claims 
 
 - User-confirmed requirements in this conversation establish invitation-only access, independent people/project management, project-scoped staff permissions, administrator approval and in-app client delivery notifications.
 - The repository contains real application components, domain types, workflow migrations and synthetic browser/database regression fixtures.
-- lib/current-survey.json contains an owner-authorised public seed survey. Treat seed data separately from the live database and from the fictional public preview in lib/public-demo.ts.
+- lib/current-survey.json contains an owner-authorised public seed survey. Treat seed data separately from the live database and from the fictional screenshot data in tests/client-dashboard-data.json.
 - Original client survey photographs and hosted storage objects are not included with the repository. Restoring missing originals requires the actual supplied files; do not infer their existence from metadata.
 - public/transmission-landscape.jpg is an existing public marketing asset. It is not evidence of the condition of a specific surveyed pole.
 - No customer testimonials, customer-logo permissions, pricing, benchmark results or engineering certifications have been supplied for new marketing claims.

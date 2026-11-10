@@ -566,7 +566,7 @@
       "Continuous navy fields with fine corridor geometry.",
       "White or slate sheets with restrained rounded controls.",
       "Orange selection and focus; labelled semantic availability.",
-      "Shared client components across public preview and private workspace."
+      "Public dashboard imagery captured from the actual client workspace."
     ],
     "rules": [
       {
@@ -577,12 +577,12 @@
     ],
     "dos": [
       "**Do** preserve the official logo, navy/orange identity and theme-specific reading surfaces.",
-      "**Do** reuse the shared client overview and keep preview adaptations scoped.",
+      "**Do** capture the real client overview for public graphics and keep operating controls behind sign-in.",
       "**Do** keep route navigation native, mobile authentication input text at least 16px and keyboard focus visible.",
       "**Do** pair availability and review states with labels and permitted next actions."
     ],
     "donts": [
-      "**Don't** add a visible sample-data label to the public preview or connect it to private records.",
+      "**Don't** add a visible sample-data label to the public dashboard imagery or connect it to private records.",
       "**Don't** reveal paused client data, invent missing survey imagery or add unsupported company claims.",
       "**Don't** turn inherited decorative kickers, glyph icons or legacy display styling into reusable system rules."
     ]
