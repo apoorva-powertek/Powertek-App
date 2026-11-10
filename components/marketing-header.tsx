@@ -51,7 +51,7 @@ export function MarketingHeader({ portalSignInUrl }: { portalSignInUrl: string }
         {menuOpen ? <X size={22} /> : <Menu size={22} />}
       </button>
       <nav id="mobile-navigation" className="mobile-navigation" aria-label="Mobile navigation" data-open={menuOpen}>
-        {navigation.map((item, index) => <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)}><span>0{index + 1}</span>{item.label}</a>)}
+        {navigation.map((item) => <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>{item.label}</a>)}
         <a className="mobile-sign-in" href={portalSignInUrl} onClick={() => setMenuOpen(false)}><LockKeyhole size={16} /> Client sign in <ArrowUpRight size={17} /></a>
       </nav>
     </header>

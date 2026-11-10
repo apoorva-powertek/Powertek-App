@@ -1,0 +1,590 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-10T13:20:19.096494Z",
+  "title": "Design System: Powertek Utility Services",
+  "extensions": {
+    "colorMeta": {
+      "brand-navy": {
+        "role": "primary",
+        "displayName": "Brand Navy",
+        "tonalRamp": [
+          "oklch(15% 0.0414 265.9)",
+          "oklch(26% 0.0896 265.9)",
+          "oklch(38% 0.1241 265.9)",
+          "oklch(50% 0.1379 265.9)",
+          "oklch(62% 0.1379 265.9)",
+          "oklch(74% 0.1172 265.9)",
+          "oklch(86% 0.0759 265.9)",
+          "oklch(95% 0.0248 265.9)"
+        ]
+      },
+      "brand-orange": {
+        "role": "primary",
+        "displayName": "Brand Orange",
+        "tonalRamp": [
+          "oklch(15% 0.0420 55.4)",
+          "oklch(26% 0.0910 55.4)",
+          "oklch(38% 0.1260 55.4)",
+          "oklch(50% 0.1400 55.4)",
+          "oklch(62% 0.1400 55.4)",
+          "oklch(74% 0.1190 55.4)",
+          "oklch(86% 0.0770 55.4)",
+          "oklch(95% 0.0252 55.4)"
+        ]
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "White",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.9)",
+          "oklch(26% 0.0000 89.9)",
+          "oklch(38% 0.0000 89.9)",
+          "oklch(50% 0.0000 89.9)",
+          "oklch(62% 0.0000 89.9)",
+          "oklch(74% 0.0000 89.9)",
+          "oklch(86% 0.0000 89.9)",
+          "oklch(95% 0.0000 89.9)"
+        ]
+      },
+      "workspace-bg": {
+        "role": "neutral",
+        "displayName": "Workspace Bg",
+        "tonalRamp": [
+          "oklch(15% 0.0019 255.5)",
+          "oklch(26% 0.0041 255.5)",
+          "oklch(38% 0.0056 255.5)",
+          "oklch(50% 0.0062 255.5)",
+          "oklch(62% 0.0062 255.5)",
+          "oklch(74% 0.0053 255.5)",
+          "oklch(86% 0.0034 255.5)",
+          "oklch(95% 0.0011 255.5)"
+        ]
+      },
+      "workspace-text": {
+        "role": "neutral",
+        "displayName": "Workspace Text",
+        "tonalRamp": [
+          "oklch(15% 0.0137 259.2)",
+          "oklch(26% 0.0296 259.2)",
+          "oklch(38% 0.0410 259.2)",
+          "oklch(50% 0.0455 259.2)",
+          "oklch(62% 0.0455 259.2)",
+          "oklch(74% 0.0387 259.2)",
+          "oklch(86% 0.0250 259.2)",
+          "oklch(95% 0.0082 259.2)"
+        ]
+      },
+      "workspace-muted": {
+        "role": "neutral",
+        "displayName": "Workspace Muted",
+        "tonalRamp": [
+          "oklch(15% 0.0122 255.0)",
+          "oklch(26% 0.0264 255.0)",
+          "oklch(38% 0.0365 255.0)",
+          "oklch(50% 0.0406 255.0)",
+          "oklch(62% 0.0406 255.0)",
+          "oklch(74% 0.0345 255.0)",
+          "oklch(86% 0.0223 255.0)",
+          "oklch(95% 0.0073 255.0)"
+        ]
+      },
+      "workspace-line": {
+        "role": "neutral",
+        "displayName": "Workspace Line",
+        "tonalRamp": [
+          "oklch(15% 0.0052 256.3)",
+          "oklch(26% 0.0112 256.3)",
+          "oklch(38% 0.0156 256.3)",
+          "oklch(50% 0.0173 256.3)",
+          "oklch(62% 0.0173 256.3)",
+          "oklch(74% 0.0147 256.3)",
+          "oklch(86% 0.0095 256.3)",
+          "oklch(95% 0.0031 256.3)"
+        ]
+      },
+      "workspace-soft": {
+        "role": "neutral",
+        "displayName": "Workspace Soft",
+        "tonalRamp": [
+          "oklch(15% 0.0029 252.8)",
+          "oklch(26% 0.0063 252.8)",
+          "oklch(38% 0.0087 252.8)",
+          "oklch(50% 0.0097 252.8)",
+          "oklch(62% 0.0097 252.8)",
+          "oklch(74% 0.0082 252.8)",
+          "oklch(86% 0.0053 252.8)",
+          "oklch(95% 0.0017 252.8)"
+        ]
+      },
+      "workspace-hover": {
+        "role": "neutral",
+        "displayName": "Workspace Hover",
+        "tonalRamp": [
+          "oklch(15% 0.0022 260.7)",
+          "oklch(26% 0.0048 260.7)",
+          "oklch(38% 0.0067 260.7)",
+          "oklch(50% 0.0074 260.7)",
+          "oklch(62% 0.0074 260.7)",
+          "oklch(74% 0.0063 260.7)",
+          "oklch(86% 0.0041 260.7)",
+          "oklch(95% 0.0013 260.7)"
+        ]
+      },
+      "workspace-success": {
+        "role": "neutral",
+        "displayName": "Workspace Success",
+        "tonalRamp": [
+          "oklch(15% 0.0292 163.0)",
+          "oklch(26% 0.0633 163.0)",
+          "oklch(38% 0.0876 163.0)",
+          "oklch(50% 0.0973 163.0)",
+          "oklch(62% 0.0973 163.0)",
+          "oklch(74% 0.0827 163.0)",
+          "oklch(86% 0.0535 163.0)",
+          "oklch(95% 0.0175 163.0)"
+        ]
+      },
+      "workspace-error": {
+        "role": "neutral",
+        "displayName": "Workspace Error",
+        "tonalRamp": [
+          "oklch(15% 0.0420 25.5)",
+          "oklch(26% 0.0910 25.5)",
+          "oklch(38% 0.1260 25.5)",
+          "oklch(50% 0.1400 25.5)",
+          "oklch(62% 0.1400 25.5)",
+          "oklch(74% 0.1190 25.5)",
+          "oklch(86% 0.0770 25.5)",
+          "oklch(95% 0.0252 25.5)"
+        ]
+      },
+      "atlas-link": {
+        "role": "neutral",
+        "displayName": "Atlas Link",
+        "tonalRamp": [
+          "oklch(15% 0.0420 264.2)",
+          "oklch(26% 0.0910 264.2)",
+          "oklch(38% 0.1260 264.2)",
+          "oklch(50% 0.1400 264.2)",
+          "oklch(62% 0.1400 264.2)",
+          "oklch(74% 0.1190 264.2)",
+          "oklch(86% 0.0770 264.2)",
+          "oklch(95% 0.0252 264.2)"
+        ]
+      },
+      "home-copy": {
+        "role": "neutral",
+        "displayName": "Home Copy",
+        "tonalRamp": [
+          "oklch(15% 0.0142 257.5)",
+          "oklch(26% 0.0308 257.5)",
+          "oklch(38% 0.0427 257.5)",
+          "oklch(50% 0.0475 257.5)",
+          "oklch(62% 0.0475 257.5)",
+          "oklch(74% 0.0403 257.5)",
+          "oklch(86% 0.0261 257.5)",
+          "oklch(95% 0.0085 257.5)"
+        ]
+      },
+      "home-soft": {
+        "role": "neutral",
+        "displayName": "Home Soft",
+        "tonalRamp": [
+          "oklch(15% 0.0024 253.9)",
+          "oklch(26% 0.0052 253.9)",
+          "oklch(38% 0.0071 253.9)",
+          "oklch(50% 0.0079 253.9)",
+          "oklch(62% 0.0079 253.9)",
+          "oklch(74% 0.0067 253.9)",
+          "oklch(86% 0.0044 253.9)",
+          "oklch(95% 0.0014 253.9)"
+        ]
+      },
+      "dark-bg": {
+        "role": "neutral",
+        "displayName": "Dark Bg",
+        "tonalRamp": [
+          "oklch(15% 0.0086 259.9)",
+          "oklch(26% 0.0187 259.9)",
+          "oklch(38% 0.0259 259.9)",
+          "oklch(50% 0.0288 259.9)",
+          "oklch(62% 0.0288 259.9)",
+          "oklch(74% 0.0245 259.9)",
+          "oklch(86% 0.0159 259.9)",
+          "oklch(95% 0.0052 259.9)"
+        ]
+      },
+      "dark-panel": {
+        "role": "neutral",
+        "displayName": "Dark Panel",
+        "tonalRamp": [
+          "oklch(15% 0.0108 258.9)",
+          "oklch(26% 0.0234 258.9)",
+          "oklch(38% 0.0324 258.9)",
+          "oklch(50% 0.0359 258.9)",
+          "oklch(62% 0.0359 258.9)",
+          "oklch(74% 0.0306 258.9)",
+          "oklch(86% 0.0198 258.9)",
+          "oklch(95% 0.0065 258.9)"
+        ]
+      },
+      "dark-text": {
+        "role": "neutral",
+        "displayName": "Dark Text",
+        "tonalRamp": [
+          "oklch(15% 0.0036 259.8)",
+          "oklch(26% 0.0078 259.8)",
+          "oklch(38% 0.0108 259.8)",
+          "oklch(50% 0.0120 259.8)",
+          "oklch(62% 0.0120 259.8)",
+          "oklch(74% 0.0102 259.8)",
+          "oklch(86% 0.0066 259.8)",
+          "oklch(95% 0.0022 259.8)"
+        ]
+      },
+      "dark-muted": {
+        "role": "neutral",
+        "displayName": "Dark Muted",
+        "tonalRamp": [
+          "oklch(15% 0.0095 254.3)",
+          "oklch(26% 0.0206 254.3)",
+          "oklch(38% 0.0285 254.3)",
+          "oklch(50% 0.0316 254.3)",
+          "oklch(62% 0.0316 254.3)",
+          "oklch(74% 0.0269 254.3)",
+          "oklch(86% 0.0174 254.3)",
+          "oklch(95% 0.0057 254.3)"
+        ]
+      },
+      "dark-line": {
+        "role": "neutral",
+        "displayName": "Dark Line",
+        "tonalRamp": [
+          "oklch(15% 0.0134 257.4)",
+          "oklch(26% 0.0291 257.4)",
+          "oklch(38% 0.0402 257.4)",
+          "oklch(50% 0.0447 257.4)",
+          "oklch(62% 0.0447 257.4)",
+          "oklch(74% 0.0380 257.4)",
+          "oklch(86% 0.0246 257.4)",
+          "oklch(95% 0.0080 257.4)"
+        ]
+      },
+      "dark-soft": {
+        "role": "neutral",
+        "displayName": "Dark Soft",
+        "tonalRamp": [
+          "oklch(15% 0.0139 258.7)",
+          "oklch(26% 0.0301 258.7)",
+          "oklch(38% 0.0417 258.7)",
+          "oklch(50% 0.0463 258.7)",
+          "oklch(62% 0.0463 258.7)",
+          "oklch(74% 0.0393 258.7)",
+          "oklch(86% 0.0255 258.7)",
+          "oklch(95% 0.0083 258.7)"
+        ]
+      },
+      "dark-hover": {
+        "role": "neutral",
+        "displayName": "Dark Hover",
+        "tonalRamp": [
+          "oklch(15% 0.0143 258.3)",
+          "oklch(26% 0.0311 258.3)",
+          "oklch(38% 0.0430 258.3)",
+          "oklch(50% 0.0478 258.3)",
+          "oklch(62% 0.0478 258.3)",
+          "oklch(74% 0.0406 258.3)",
+          "oklch(86% 0.0263 258.3)",
+          "oklch(95% 0.0086 258.3)"
+        ]
+      },
+      "dark-success": {
+        "role": "neutral",
+        "displayName": "Dark Success",
+        "tonalRamp": [
+          "oklch(15% 0.0291 164.3)",
+          "oklch(26% 0.0631 164.3)",
+          "oklch(38% 0.0873 164.3)",
+          "oklch(50% 0.0970 164.3)",
+          "oklch(62% 0.0970 164.3)",
+          "oklch(74% 0.0825 164.3)",
+          "oklch(86% 0.0534 164.3)",
+          "oklch(95% 0.0175 164.3)"
+        ]
+      },
+      "dark-error": {
+        "role": "neutral",
+        "displayName": "Dark Error",
+        "tonalRamp": [
+          "oklch(15% 0.0257 27.9)",
+          "oklch(26% 0.0556 27.9)",
+          "oklch(38% 0.0770 27.9)",
+          "oklch(50% 0.0855 27.9)",
+          "oklch(62% 0.0855 27.9)",
+          "oklch(74% 0.0727 27.9)",
+          "oklch(86% 0.0470 27.9)",
+          "oklch(95% 0.0154 27.9)"
+        ]
+      },
+      "dark-atlas-ink": {
+        "role": "neutral",
+        "displayName": "Dark Atlas Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0168 269.7)",
+          "oklch(26% 0.0364 269.7)",
+          "oklch(38% 0.0504 269.7)",
+          "oklch(50% 0.0560 269.7)",
+          "oklch(62% 0.0560 269.7)",
+          "oklch(74% 0.0476 269.7)",
+          "oklch(86% 0.0308 269.7)",
+          "oklch(95% 0.0101 269.7)"
+        ]
+      },
+      "dark-atlas-link": {
+        "role": "neutral",
+        "displayName": "Dark Atlas Link",
+        "tonalRamp": [
+          "oklch(15% 0.0192 268.5)",
+          "oklch(26% 0.0416 268.5)",
+          "oklch(38% 0.0576 268.5)",
+          "oklch(50% 0.0640 268.5)",
+          "oklch(62% 0.0640 268.5)",
+          "oklch(74% 0.0544 268.5)",
+          "oklch(86% 0.0352 268.5)",
+          "oklch(95% 0.0115 268.5)"
+        ]
+      },
+      "dark-home-ink": {
+        "role": "neutral",
+        "displayName": "Dark Home Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0055 269.1)",
+          "oklch(26% 0.0119 269.1)",
+          "oklch(38% 0.0164 269.1)",
+          "oklch(50% 0.0182 269.1)",
+          "oklch(62% 0.0182 269.1)",
+          "oklch(74% 0.0155 269.1)",
+          "oklch(86% 0.0100 269.1)",
+          "oklch(95% 0.0033 269.1)"
+        ]
+      },
+      "dark-home-copy": {
+        "role": "neutral",
+        "displayName": "Dark Home Copy",
+        "tonalRamp": [
+          "oklch(15% 0.0105 257.9)",
+          "oklch(26% 0.0227 257.9)",
+          "oklch(38% 0.0315 257.9)",
+          "oklch(50% 0.0350 257.9)",
+          "oklch(62% 0.0350 257.9)",
+          "oklch(74% 0.0297 257.9)",
+          "oklch(86% 0.0192 257.9)",
+          "oklch(95% 0.0063 257.9)"
+        ]
+      },
+      "dark-home-soft": {
+        "role": "neutral",
+        "displayName": "Dark Home Soft",
+        "tonalRamp": [
+          "oklch(15% 0.0130 258.3)",
+          "oklch(26% 0.0282 258.3)",
+          "oklch(38% 0.0391 258.3)",
+          "oklch(50% 0.0434 258.3)",
+          "oklch(62% 0.0434 258.3)",
+          "oklch(74% 0.0369 258.3)",
+          "oklch(86% 0.0239 258.3)",
+          "oklch(95% 0.0078 258.3)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Public Display",
+        "purpose": "Public hero and headings; Manrope bold."
+      },
+      "headline": {
+        "displayName": "Operating Headline",
+        "purpose": "Workspace and project titles."
+      },
+      "body": {
+        "displayName": "Operating Body",
+        "purpose": "Inter for evidence, forms, lists and tables."
+      },
+      "auth-input-mobile": {
+        "displayName": "Mobile Authentication",
+        "purpose": "At least 16px at widths up to 760px."
+      }
+    },
+    "shadows": [
+      {
+        "name": "workspace-rest",
+        "value": "none",
+        "purpose": "Flat operating sheets."
+      },
+      {
+        "name": "public-preview",
+        "value": "0 24px 64px #020f413d",
+        "purpose": "Embedded workspace on the navy corridor."
+      },
+      {
+        "name": "mobile-menu",
+        "value": "0 14px 35px #081d4220",
+        "purpose": "Public mobile navigation."
+      },
+      {
+        "name": "active-navigation",
+        "value": "inset 0 0 0 1px #4961a3",
+        "purpose": "Selected navy rail item."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-transition",
+        "value": "background-color .16s, border-color .16s, box-shadow .16s, transform .16s",
+        "purpose": "Inherited operational control transitions."
+      },
+      {
+        "name": "atlas-route",
+        "value": "atlas-connect 2.4s cubic-bezier(.16,1,.3,1) both",
+        "purpose": "Public corridor draw when motion is enabled."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "prefers-reduced-motion: reduce",
+        "purpose": "Disable animation/transition and use automatic scrolling."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-phone",
+        "value": "440px"
+      },
+      {
+        "name": "public-phone",
+        "value": "600px"
+      },
+      {
+        "name": "workspace-mobile",
+        "value": "760px"
+      },
+      {
+        "name": "public-navigation",
+        "value": "900px"
+      },
+      {
+        "name": "project-guide-stack",
+        "value": "1050px"
+      },
+      {
+        "name": "client-layout-stack",
+        "value": "1200px"
+      },
+      {
+        "name": "preview-coverage",
+        "value": "1250px"
+      },
+      {
+        "name": "wide-workspace",
+        "value": "1600px"
+      },
+      {
+        "name": "wide-preview",
+        "value": "1700px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Workspace Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary operational action.",
+      "html": "<button class=\"ds-primary\">New project</button>",
+      "css": ".ds-primary,.ds-secondary,.ds-home{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 14px;border-radius:8px;font:600 12px Inter,system-ui,sans-serif;min-height:42px;cursor:pointer;transition:background-color .16s,border-color .16s,box-shadow .16s,transform .16s}.ds-primary:focus-visible,.ds-secondary:focus-visible,.ds-home:focus-visible{outline:3px solid var(--brand-orange,#ff8d2a);outline-offset:3px}.ds-primary{background:var(--brand-navy,#0c2170);color:#fff;border:1px solid var(--brand-navy,#0c2170);box-shadow:0 3px 7px #0c217016}.ds-primary:hover{background:#17318a}.ds-primary:disabled{opacity:.55;cursor:not-allowed}"
+    },
+    {
+      "name": "Workspace Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Supporting actions such as export and refresh.",
+      "html": "<button class=\"ds-secondary\">Export summary</button>",
+      "css": ".ds-primary,.ds-secondary,.ds-home{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 14px;border-radius:8px;font:600 12px Inter,system-ui,sans-serif;min-height:42px;cursor:pointer;transition:background-color .16s,border-color .16s,box-shadow .16s,transform .16s}.ds-primary:focus-visible,.ds-secondary:focus-visible,.ds-home:focus-visible{outline:3px solid var(--brand-orange,#ff8d2a);outline-offset:3px}.ds-secondary{background:var(--workspace-panel,#fff);color:var(--workspace-text,#19273d);border:1px solid var(--workspace-line,#dce4ef)}.ds-secondary:hover{background:var(--workspace-soft,#edf2f8)}.ds-secondary:disabled{opacity:.55;cursor:not-allowed}"
+    },
+    {
+      "name": "Public Primary Action",
+      "kind": "button",
+      "refersTo": "button-home",
+      "description": "Public action in the introductory action group.",
+      "html": "<a class=\"ds-home\" href=\"#workspace\">Explore the workspace</a>",
+      "css": ".ds-primary,.ds-secondary,.ds-home{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 14px;border-radius:8px;font:600 12px Inter,system-ui,sans-serif;min-height:42px;cursor:pointer;transition:background-color .16s,border-color .16s,box-shadow .16s,transform .16s}.ds-primary:focus-visible,.ds-secondary:focus-visible,.ds-home:focus-visible{outline:3px solid var(--brand-orange,#ff8d2a);outline-offset:3px}.ds-home{background:#0c2170;color:#fff;border:0;padding:12px 19px;min-height:46px;font-size:13px;gap:15px;text-decoration:none}.ds-home:hover{background:#29468f}"
+    },
+    {
+      "name": "Authentication Field",
+      "kind": "input",
+      "refersTo": "input-auth",
+      "description": "Shared sign-in, recovery and password-setting field.",
+      "html": "<label class=\"ds-label\">Work email<span class=\"ds-field\"><input type=\"email\" autocomplete=\"email\" placeholder=\"you@company.com\" /></span></label>",
+      "css": ".ds-label{display:grid;gap:8px;font:550 13px Inter,system-ui,sans-serif;color:var(--workspace-text,#19273d)}.ds-field{display:flex;align-items:center;min-height:48px;padding:0 13px;background:var(--workspace-bg,#f2f5f9);border:1px solid var(--workspace-line,#dce4ef);border-radius:8px;transition:border-color .16s}.ds-field:focus-within{outline:2px solid var(--brand-orange,#ff8d2a);outline-offset:2px}.ds-field input{width:100%;min-width:0;height:48px;background:none;border:0;color:var(--workspace-text,#19273d);font:14px Inter,system-ui,sans-serif;outline:none}@media(max-width:760px){.ds-field input{font-size:16px}}"
+    },
+    {
+      "name": "Navy Navigation",
+      "kind": "nav",
+      "refersTo": "navigation-item",
+      "description": "Local workspace navigation with orange selected icon.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Workspace\"><button aria-current=\"page\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/></svg>Overview</button><button>Projects</button></nav>",
+      "css": ".ds-nav{display:grid;gap:7px;background:#0c2170;padding:16px;max-width:232px}.ds-nav button{display:flex;align-items:center;gap:12px;min-height:46px;padding:12px;border:0;border-radius:8px;background:none;color:#d6e1f7;text-align:left;font:600 13px Inter,system-ui,sans-serif;cursor:pointer;transition:background-color .16s}.ds-nav button[aria-current]{background:#2b438e;box-shadow:inset 0 0 0 1px #4961a3;color:#fff}.ds-nav button[aria-current] svg{color:#ffae65}.ds-nav button:hover{background:#213b85;color:#fff}.ds-nav button:focus-visible{outline:3px solid var(--brand-orange,#ff8d2a);outline-offset:3px}"
+    },
+    {
+      "name": "Project Availability",
+      "kind": "chip",
+      "refersTo": "availability",
+      "description": "Text and icon communicate ready or paused access.",
+      "html": "<span class=\"ds-availability\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"m20 6-11 11-5-5\"/></svg>Ready to view</span><span class=\"ds-availability ds-paused\">Update under review</span>",
+      "css": ".ds-availability{display:inline-flex;align-items:center;gap:5px;color:var(--workspace-success,#16704f);font:11px Inter,system-ui,sans-serif;white-space:nowrap;margin-right:16px}.ds-paused{color:var(--workspace-muted,#596a80)}"
+    },
+    {
+      "name": "Operating Sheet",
+      "kind": "card",
+      "refersTo": "sheet",
+      "description": "Flat grouping for operational information.",
+      "html": "<section class=\"ds-sheet\"><h2>Project records</h2><p>Locations, measured profiles and available imagery.</p></section>",
+      "css": ".ds-sheet{padding:23px;border:1px solid var(--workspace-line,#dce4ef);border-radius:12px;background:var(--workspace-panel,#fff);color:var(--workspace-text,#19273d);box-shadow:none;font:14px/1.55 Inter,system-ui,sans-serif}.ds-sheet h2{font-size:18px;font-weight:650;letter-spacing:-.025em;margin:0 0 10px}.ds-sheet p{color:var(--workspace-muted,#596a80);margin:0}"
+    },
+    {
+      "name": "Client Deliverables Panel",
+      "kind": "custom",
+      "refersTo": "delivery-panel",
+      "description": "Distinct navy destination for available project files.",
+      "html": "<aside class=\"ds-delivery\"><h2>Project deliverables.</h2><p>Available files, measured records and reports, organised in one place.</p><a href=\"/portal\">Browse project files</a></aside>",
+      "css": ".ds-delivery{background:#0c2170;color:#fff;border-radius:14px;padding:24px;max-width:285px;font:14px/1.55 Inter,system-ui,sans-serif}.ds-delivery h2{font-size:25px;font-weight:600;letter-spacing:-.025em;margin:0}.ds-delivery p{color:#cad6f1;font-size:13px;line-height:1.7;margin:12px 0 22px}.ds-delivery a{display:flex;justify-content:space-between;gap:12px;background:#fff;color:#0c2170;padding:12px 14px;border-radius:8px;font-size:12px;font-weight:650;text-decoration:none}.ds-delivery a:hover{background:#ffe6cf}.ds-delivery a:focus-visible{outline:3px solid var(--brand-orange,#ff8d2a);outline-offset:3px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Connected Atlas",
+    "overview": "Navy corridor fields connect white inspection sheets, fine route geometry and orange selections. The system makes relationships between projects, locations, imagery, measured profiles and deliverables visible. Public pages use geometric display type; private workspaces keep conventional forms, tabs, lists and file tables.\n\nOperational surfaces are restrained and readable, with role-specific next actions and explicit availability. Preserve the official Powertek identity and its logo proportions. This records the shipped code: `app/home.css` and then `app/experience.css` take precedence over earlier styles imported by `app/layout.tsx`.",
+    "keyCharacteristics": [
+      "Continuous navy fields with fine corridor geometry.",
+      "White or slate sheets with restrained rounded controls.",
+      "Orange selection and focus; labelled semantic availability.",
+      "Shared client components across public preview and private workspace."
+    ],
+    "rules": [
+      {
+        "name": "The Color Ownership Rule",
+        "body": "Use navy for structure, orange for selection and focus, and semantic status colours with explicit text.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "**Do** preserve the official logo, navy/orange identity and theme-specific reading surfaces.",
+      "**Do** reuse the shared client overview and keep preview adaptations scoped.",
+      "**Do** keep route navigation native, mobile authentication input text at least 16px and keyboard focus visible.",
+      "**Do** pair availability and review states with labels and permitted next actions."
+    ],
+    "donts": [
+      "**Don't** add a visible sample-data label to the public preview or connect it to private records.",
+      "**Don't** reveal paused client data, invent missing survey imagery or add unsupported company claims.",
+      "**Don't** turn inherited decorative kickers, glyph icons or legacy display styling into reusable system rules."
+    ]
+  }
+}
