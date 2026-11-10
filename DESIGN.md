@@ -130,7 +130,7 @@ Operational surfaces are restrained and readable, with role-specific next action
 - Continuous navy fields with fine corridor geometry.
 - White or slate sheets with restrained rounded controls.
 - Orange selection and focus; labelled semantic availability.
-- Shared client components across public preview and private workspace.
+- Public dashboard imagery captured from the actual client workspace.
 
 ## Colors
 
@@ -187,7 +187,7 @@ Private workspaces have a fixed navy rail (232px), a top bar (72px), content pad
 
 The shared client overview uses a flexible project list and a deliverables column (285px), with a gap (28px). It stacks at (1200px); coverage detail disappears at (900px), and compact project symbols disappear at (440px). Authentication uses two balanced columns within (1240px), with a form capped at (420px); it stacks at (760px). Project summaries become two columns at (760px); mobile record tables become readable record rows at (600px). Keep scrolling and overflow available for dense tools.
 
-The public preview uses a bounded, keyboard-focusable scroll region and tighter type and spacing than the private overview. Its side delivery panel is hidden at narrower widths. Preserve these scoped adaptations rather than shrinking the private workspace to match them.
+The public website uses noninteractive dashboard images, with separate desktop/mobile and light/dark captures. The graphic has no nested scroll region, keyboard focus, project controls or downloads. Use the real client layout for captures rather than a separate public dashboard implementation.
 
 ## Elevation & Depth
 
@@ -219,11 +219,11 @@ Use persistent labels, bordered reading surfaces, clear focus and labelled passw
 
 ### Navigation
 
-Use native anchors for route changes, public section links, project access, permanent project URLs and report destinations; production navigation depends on this behavior. Use buttons for local workspace tabs, preview screens and state changes. Preserve visible current/pressed state, labelled icon controls, skip links and the mobile drawer's dialog semantics.
+Use native anchors for route changes, public section links, project access, permanent project URLs and report destinations; production navigation depends on this behavior. Use buttons for local workspace tabs and state changes behind sign-in. Preserve visible current/pressed state, labelled icon controls, skip links and the mobile drawer's dialog semantics.
 
 ### Connected Client Evidence
 
-`components/client-overview.tsx` is shared by the real client workspace and `components/product-demo.tsx`. Real project links remain native anchors; the preview supplies callbacks to change its local screen. The preview uses fictional isolated records and real application components without a visible sample-data label, as explicitly requested. It must never expose private APIs, customer records or private storage URLs.
+`components/client-overview.tsx` renders the real client workspace. `components/client-dashboard-visual.tsx` shows static WebP captures of that workspace on the public website, with fictional isolated project data and no visible sample-data label. The public graphic has no working project controls, tour downloads or private API calls. Capture scripts and fictional data live in `tests/capture-client-dashboard.py` and `tests/client-dashboard-data.json`.
 
 Clients see assigned/released work. A paused project must not offer a usable project link or disclose record counts, coverage or measurements; exported client summaries leave its numeric data empty. Administrators see people, permissions, review and release actions; employees see upload/edit actions only within their authorised project scope. Keep release, download availability, missing originals and the next permitted action explicit. Preserve server/database enforcement independently of the interface.
 
@@ -236,12 +236,12 @@ Use the fixed official `public/powertek-logo.svg` without changing proportions; 
 ### Do:
 
 - **Do** preserve the official logo, navy/orange identity and theme-specific reading surfaces.
-- **Do** reuse the shared client overview and keep preview adaptations scoped.
+- **Do** capture the real client overview for public graphics and keep operating controls behind sign-in.
 - **Do** keep route navigation native, mobile authentication input text at least 16px and keyboard focus visible.
 - **Do** pair availability and review states with labels and permitted next actions.
 
 ### Don't:
 
-- **Don't** add a visible sample-data label to the public preview or connect it to private records.
+- **Don't** add a visible sample-data label to the public dashboard imagery or connect it to private records.
 - **Don't** reveal paused client data, invent missing survey imagery or add unsupported company claims.
 - **Don't** turn inherited decorative kickers, glyph icons or legacy display styling into reusable system rules.

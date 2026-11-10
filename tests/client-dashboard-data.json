@@ -1,0 +1,62 @@
+[
+  {
+    "id": "preview-north",
+    "client_id": "preview-grid",
+    "client_name": "Westbrook Energy",
+    "name": "Cedar Creek corridor",
+    "code": "CC-2026",
+    "description": "Transmission corridor inspection",
+    "location_label": "North district \u00b7 132 kV corridor",
+    "status": "active",
+    "pole_count": 128,
+    "complete_count": 128,
+    "attachment_count": 768,
+    "can_upload": false,
+    "can_view": true,
+    "review_counts": {
+      "approved": 128
+    },
+    "published_at": "2026-11-05T12:00:00Z",
+    "updated_at": "2026-11-05T12:00:00Z"
+  },
+  {
+    "id": "preview-river",
+    "client_id": "preview-grid",
+    "client_name": "Westbrook Energy",
+    "name": "Riverbend network survey",
+    "code": "RN-2026",
+    "description": "Distribution asset survey",
+    "location_label": "Riverbend \u00b7 Distribution network",
+    "status": "active",
+    "pole_count": 96,
+    "complete_count": 96,
+    "attachment_count": 528,
+    "can_upload": false,
+    "can_view": true,
+    "review_counts": {
+      "delivered": 96
+    },
+    "published_at": "2026-11-04T12:00:00Z",
+    "updated_at": "2026-11-04T12:00:00Z"
+  },
+  {
+    "id": "preview-valley",
+    "client_id": "preview-grid",
+    "client_name": "Westbrook Energy",
+    "name": "Valley line assessment",
+    "code": "VL-2026",
+    "description": "Measured attachment inspection",
+    "location_label": "West district \u00b7 Overhead lines",
+    "status": "active",
+    "pole_count": 64,
+    "complete_count": 64,
+    "attachment_count": 352,
+    "can_upload": false,
+    "can_view": true,
+    "review_counts": {
+      "approved": 64
+    },
+    "published_at": "2026-11-03T12:00:00Z",
+    "updated_at": "2026-11-03T12:00:00Z"
+  }
+]

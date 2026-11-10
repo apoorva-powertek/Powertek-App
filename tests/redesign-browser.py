@@ -1,7 +1,6 @@
 """Client-first redesign regression: public isolation, role separation and real controls."""
 from browser_fixtures import *
 from playwright.sync_api import expect
-import zipfile
 import csv,io
 REVIEW=Path('/workspace/Powertek-App/.impeccable/review');REVIEW.mkdir(parents=True,exist_ok=True)
 with sync_playwright() as p:
@@ -9,26 +8,13 @@ with sync_playwright() as p:
  c=b.new_context(viewport={'width':1440,'height':1000});page=c.new_page();errors=[];private=[]
  page.on('pageerror',lambda e:errors.append(str(e)))
  page.on('request',lambda r:private.append(r.url) if '/api/' in r.url or '.supabase.co/' in r.url else None)
- page.goto(BASE_URL+'/');demo=page.get_by_role('region',name='Interactive client dashboard preview',exact=True)
- expect(demo.get_by_role('heading',name='Your project library')).to_be_visible()
- expect(demo.get_by_role('button',name='Dashboard',exact=True)).to_be_enabled()
- assert 'sample' not in demo.inner_text().lower()
- for forbidden in ['Awaiting review','Needs attention','Coverage by client','People & access','Operations overview']:
-  assert forbidden not in demo.inner_text(),forbidden
- expect(demo.get_by_label('Your project summary')).to_contain_text('288')
- demo.get_by_role('button',name='View project',exact=True).first.click()
- expect(demo.get_by_role('heading',name='Measured attachments')).to_be_visible()
- demo.get_by_label('Choose pole',exact=True).select_option('1')
- demo.get_by_role('button',name='Primary',exact=False).click()
- demo.get_by_role('button',name='Show all measurements').click()
- demo.get_by_role('button',name='Deliverables',exact=True).click()
- with page.expect_download() as event: demo.get_by_role('button',name='Download tour package').click()
- download=event.value;archive=zipfile.ZipFile(download.path());assert sum(n.endswith('.html') for n in archive.namelist())==3
- demo.get_by_role('button',name='Reset product preview').click()
- expect(demo.get_by_role('heading',name='Your project library')).to_be_visible()
- demo.get_by_role('button',name='Browse project files',exact=True).click()
- expect(demo.get_by_role('heading',name='Project deliverables')).to_be_visible()
- demo.get_by_role('button',name='Reset product preview').click()
+ page.goto(BASE_URL+'/');visual=page.get_by_role('figure',name='Client dashboard image',exact=True)
+ expect(visual.get_by_role('img')).to_be_visible()
+ expect(page.get_by_role('group',name='Explore engineering services').get_by_role('button').first).to_be_enabled()
+ assert visual.locator('button,a,input,select,[tabindex]').count()==0
+ assert page.get_by_role('button',name='Download tour package').count()==0
+ assert page.get_by_role('navigation',name='Preview screens').count()==0
+ assert visual.get_by_role('img').evaluate('e=>e.complete && e.naturalWidth==1440')
  page.get_by_role('button',name='Thermal rating analysis',exact=True).click()
  expect(page.locator('.home-service-detail')).to_contain_text('Conductor operating limits')
  page.get_by_role('button',name='03 Share & deliver',exact=False).click()
@@ -38,8 +24,8 @@ with sync_playwright() as p:
  for width in [320,375,768,1024,1440,1920]:
   page.set_viewport_size({'width':width,'height':1000});no_overflow(page)
  page.set_viewport_size({'width':1440,'height':1000});page.evaluate('scrollTo(0,0)');page.evaluate('document.fonts.ready');page.screenshot(path=str(REVIEW/'desktop.png'),full_page=True,animations="disabled")
- page.get_by_role('button',name='Switch to dark mode').click();page.screenshot(path=str(REVIEW/'home-dark.png'),full_page=True,animations="disabled")
- page.set_viewport_size({'width':375,'height':950});page.evaluate('scrollTo(0,0)');page.screenshot(path=str(REVIEW/'mobile.png'),full_page=True,animations="disabled")
+ page.get_by_role('button',name='Switch to dark mode').click();assert 'dark.webp' in visual.get_by_role('img').get_attribute('src');page.screenshot(path=str(REVIEW/'home-dark.png'),full_page=True,animations="disabled")
+ page.set_viewport_size({'width':375,'height':950});page.evaluate('scrollTo(0,0)');expect(visual.get_by_role('img')).to_have_js_property('naturalWidth',390);page.screenshot(path=str(REVIEW/'mobile.png'),full_page=True,animations="disabled")
  page.get_by_role('button',name='Open navigation menu').click();page.keyboard.press('Escape');expect(page.get_by_role('button',name='Open navigation menu')).to_be_focused()
  page.emulate_media(reduced_motion='reduce');assert page.locator('.home-atlas-route path').evaluate('e=>getComputedStyle(e).animationName')=='none'
  assert not errors,errors
@@ -85,4 +71,4 @@ with sync_playwright() as p:
   page.screenshot(path=str(REVIEW/(name+'-desktop.png')),full_page=True,animations="disabled")
   for width in [320,375,768,1024,1440,1920]:page.set_viewport_size({'width':width,'height':1000});no_overflow(page)
   page.get_by_role('button',name='Switch to dark mode').click();page.set_viewport_size({'width':375,'height':950});assert page.get_by_label('Work email',exact=True).evaluate('e=>parseFloat(getComputedStyle(e).fontSize)')>=16;page.screenshot(path=str(REVIEW/(name+'-mobile.png')),full_page=True,animations="disabled");c.close()
- b.close();print('Redesign checks passed: client preview isolation and richer data; no sample labels or administrator panels; interactive records/model/package download; role separation; password visibility/recovery navigation; light/dark; reduced motion; responsive 320–1920px. All private responses and writes mocked.')
+ b.close();print('Redesign checks passed: noninteractive client dashboard graphics; matching light/dark and mobile images; no public demo controls or downloads; role separation; password visibility/recovery navigation; light/dark; reduced motion; responsive 320–1920px. All private responses and writes mocked.')
