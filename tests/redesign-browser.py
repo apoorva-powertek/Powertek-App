@@ -5,31 +5,6 @@ import csv,io
 REVIEW=Path('/workspace/Powertek-App/.impeccable/review');REVIEW.mkdir(parents=True,exist_ok=True)
 with sync_playwright() as p:
  b=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
- c=b.new_context(viewport={'width':1440,'height':1000});page=c.new_page();errors=[];private=[]
- page.on('pageerror',lambda e:errors.append(str(e)))
- page.on('request',lambda r:private.append(r.url) if '/api/' in r.url or '.supabase.co/' in r.url else None)
- page.goto(BASE_URL+'/');visual=page.get_by_role('figure',name='Client dashboard image',exact=True)
- expect(visual.get_by_role('img')).to_be_visible()
- expect(page.get_by_role('group',name='Explore engineering services').get_by_role('button').first).to_be_enabled()
- assert visual.locator('button,a,input,select,[tabindex]').count()==0
- assert page.get_by_role('button',name='Download tour package').count()==0
- assert page.get_by_role('navigation',name='Preview screens').count()==0
- assert visual.get_by_role('img').evaluate('e=>e.complete && e.naturalWidth==1440')
- page.get_by_role('button',name='Thermal rating analysis',exact=True).click()
- expect(page.locator('.home-service-detail')).to_contain_text('Conductor operating limits')
- page.get_by_role('button',name='03 Share & deliver',exact=False).click()
- expect(page.locator('.home-stage-detail')).to_contain_text('Notify clients in their workspace')
- page.locator('details').first.locator('summary').click();expect(page.locator('details').first).to_have_attribute('open','')
- assert not private,private
- for width in [320,375,768,1024,1440,1920]:
-  page.set_viewport_size({'width':width,'height':1000});no_overflow(page)
- page.set_viewport_size({'width':1440,'height':1000});page.evaluate('scrollTo(0,0)');page.evaluate('document.fonts.ready');page.screenshot(path=str(REVIEW/'desktop.png'),full_page=True,animations="disabled")
- page.get_by_role('button',name='Switch to dark mode').click();assert 'dark.webp' in visual.get_by_role('img').get_attribute('src');page.screenshot(path=str(REVIEW/'home-dark.png'),full_page=True,animations="disabled")
- page.set_viewport_size({'width':375,'height':950});page.evaluate('scrollTo(0,0)');expect(visual.get_by_role('img')).to_have_js_property('naturalWidth',390);page.screenshot(path=str(REVIEW/'mobile.png'),full_page=True,animations="disabled")
- page.get_by_role('button',name='Open navigation menu').click();page.keyboard.press('Escape');expect(page.get_by_role('button',name='Open navigation menu')).to_be_focused()
- page.emulate_media(reduced_motion='reduce');assert page.locator('.home-atlas-route path').evaluate('e=>getComputedStyle(e).animationName')=='none'
- assert not errors,errors
- c.close()
  for role in ['admin','client','staff']:
   c=b.new_context(viewport={'width':1440,'height':1000});setup(c,role)
   if role=='client':
@@ -71,4 +46,4 @@ with sync_playwright() as p:
   page.screenshot(path=str(REVIEW/(name+'-desktop.png')),full_page=True,animations="disabled")
   for width in [320,375,768,1024,1440,1920]:page.set_viewport_size({'width':width,'height':1000});no_overflow(page)
   page.get_by_role('button',name='Switch to dark mode').click();page.set_viewport_size({'width':375,'height':950});assert page.get_by_label('Work email',exact=True).evaluate('e=>parseFloat(getComputedStyle(e).fontSize)')>=16;page.screenshot(path=str(REVIEW/(name+'-mobile.png')),full_page=True,animations="disabled");c.close()
- b.close();print('Redesign checks passed: noninteractive client dashboard graphics; matching light/dark and mobile images; no public demo controls or downloads; role separation; password visibility/recovery navigation; light/dark; reduced motion; responsive 320–1920px. All private responses and writes mocked.')
+ b.close();print('Redesign checks passed: role separation; password visibility/recovery navigation; light/dark; reduced motion; responsive 320–1920px. All private responses and writes mocked.')

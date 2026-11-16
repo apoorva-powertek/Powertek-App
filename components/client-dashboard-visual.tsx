@@ -6,7 +6,7 @@ export function ClientDashboardVisual(){
  return <figure className="home-dashboard-visual" aria-label="Client dashboard image">
   {(['light','dark'] as const).map(theme=><picture key={theme} className={`dashboard-image-${theme}`}>
    <source media="(max-width: 600px)" srcSet={`/client-dashboard-mobile-${theme}.webp`}/>
-   <Image src={`/client-dashboard-${theme}.webp`} alt={description} width={1440} height={1082} priority unoptimized/>
+   <Image src={`/client-dashboard-${theme}.webp`} alt={description} width={1440} height={1082} loading="lazy" unoptimized/>
   </picture>)}
  </figure>;
 }
