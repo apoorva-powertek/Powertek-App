@@ -11,7 +11,7 @@ web
 - Administrators manage clients, projects, invitations, people, permissions and project assignments. They review survey work and control its release to clients.
 - Internal employees upload and extend authorised projects, inspect records and submit work for administrator review. They must be able to do this in the application without operating the database or storage backend.
 - Invited clients sign in to inspect assigned projects, check notifications and download available project files and reports.
-- Public website visitors evaluate Powertek's engineering and inspection capabilities, see client dashboard imagery, contact the company or enter the client workspace.
+- Public website visitors evaluate Powertek's engineering and inspection capabilities, explore dedicated service pages, understand the process, contact the company or enter the client workspace.
 
 ## Product Purpose
 
@@ -27,7 +27,7 @@ Additional comparative claims, performance guarantees, market-leadership claims 
 
 ## Operating Context
 
-- The public home page explains transmission line modelling, thermal rating analysis, vegetation risk management, high-resolution inspection, thermal IR surveys and corona UV inspection.
+- The public homepage, Services catalogue and six service detail pages explain transmission line modelling, thermal rating analysis, vegetation risk management, high-resolution inspection, thermal IR surveys and corona UV inspection. About, Our Process and Contact pages share the same brand and native navigation. The homepage leads with engineering imagery and places the static client-dashboard illustration farther down the page.
 - Survey work uses CSV/Excel location sheets, measurement JSON and original photos. Uploads can contain individual files or a ZIP package and include a validation/preview step.
 - Projects contain named poles, coordinates, elevations, measured attachment heights, original imagery and source-file references. Inspection includes map, photo, measured-profile and report views.
 - Employees work through the application. Administrators approve before client release; clients receive in-app notifications and sign in to check and download the project. Delivery does not require email or an external email application.
@@ -46,6 +46,7 @@ Additional comparative claims, performance guarantees, market-leadership claims 
 - File names and imported image references do not establish photo availability. Confirm the original file exists; explain unavailable files and give editors an upload/recovery action. Never replace missing survey evidence with a fabricated photo.
 - Preserve record identity, measurements and original file bytes during supported upload/retry flows. Do not silently omit unavailable files from exports.
 - Existing package limits and retry behaviour are implementation constraints documented in docs/project-delivery.md and docs/survey-quality-workflow.md. Keep those documents consistent when changing upload or download limits.
+- The public website offers a contact composer that prepares an email draft and supports copying/editing. It does not send a message or upload enquiry data; the user reviews and sends from their email app.
 - The public website uses static screenshots of the real client dashboard with fictional project data, without a visible sample-data label as requested by the user. There are no interactive workspace previews, project controls or tour downloads on the website. Its dashboard graphics must not fetch or reveal private customer records, account details or storage URLs.
 - Password-reset links must reach the password-setting screen. Navigation, return paths, downloads, filters and primary actions must function across supported screen sizes.
 
@@ -62,7 +63,7 @@ Additional comparative claims, performance guarantees, market-leadership claims 
 - The repository contains real application components, domain types, workflow migrations and synthetic browser/database regression fixtures.
 - lib/current-survey.json contains an owner-authorised public seed survey. Treat seed data separately from the live database and from the fictional screenshot data in tests/client-dashboard-data.json.
 - Original client survey photographs and hosted storage objects are not included with the repository. Restoring missing originals requires the actual supplied files; do not infer their existence from metadata.
-- public/transmission-landscape.jpg is an existing public marketing asset. It is not evidence of the condition of a specific surveyed pole.
+- public/transmission-landscape.jpg is an existing public marketing asset sourced from Unsplash. public/marketing/corridor-field.webp is public-domain US Fish and Wildlife Service infrastructure imagery, with credits and provenance. Neither is evidence of a Powertek customer project or the condition of a specific surveyed pole. Service diagrams illustrate engineering concepts.
 - No customer testimonials, customer-logo permissions, pricing, benchmark results or engineering certifications have been supplied for new marketing claims.
 - Existing operational references include docs/admin-and-invitations.md, docs/admin-management-flow.md, docs/password-recovery.md, docs/project-delivery.md and docs/home-experience.md.
 

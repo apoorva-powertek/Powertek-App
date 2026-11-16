@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-10T13:20:19.096494Z",
+  "generatedAt": "2026-11-16T13:31:13.234487+00:00",
   "title": "Design System: Powertek Utility Services",
   "extensions": {
     "colorMeta": {
@@ -172,34 +172,6 @@
           "oklch(95% 0.0252 264.2)"
         ]
       },
-      "home-copy": {
-        "role": "neutral",
-        "displayName": "Home Copy",
-        "tonalRamp": [
-          "oklch(15% 0.0142 257.5)",
-          "oklch(26% 0.0308 257.5)",
-          "oklch(38% 0.0427 257.5)",
-          "oklch(50% 0.0475 257.5)",
-          "oklch(62% 0.0475 257.5)",
-          "oklch(74% 0.0403 257.5)",
-          "oklch(86% 0.0261 257.5)",
-          "oklch(95% 0.0085 257.5)"
-        ]
-      },
-      "home-soft": {
-        "role": "neutral",
-        "displayName": "Home Soft",
-        "tonalRamp": [
-          "oklch(15% 0.0024 253.9)",
-          "oklch(26% 0.0052 253.9)",
-          "oklch(38% 0.0071 253.9)",
-          "oklch(50% 0.0079 253.9)",
-          "oklch(62% 0.0079 253.9)",
-          "oklch(74% 0.0067 253.9)",
-          "oklch(86% 0.0044 253.9)",
-          "oklch(95% 0.0014 253.9)"
-        ]
-      },
       "dark-bg": {
         "role": "neutral",
         "displayName": "Dark Bg",
@@ -354,53 +326,487 @@
           "oklch(95% 0.0115 268.5)"
         ]
       },
-      "dark-home-ink": {
+      "site-bg": {
         "role": "neutral",
-        "displayName": "Dark Home Ink",
+        "displayName": "Site Bg",
         "tonalRamp": [
-          "oklch(15% 0.0055 269.1)",
-          "oklch(26% 0.0119 269.1)",
-          "oklch(38% 0.0164 269.1)",
-          "oklch(50% 0.0182 269.1)",
-          "oklch(62% 0.0182 269.1)",
-          "oklch(74% 0.0155 269.1)",
-          "oklch(86% 0.0100 269.1)",
-          "oklch(95% 0.0033 269.1)"
+          "oklch(15% 0.0000 89.9)",
+          "oklch(26% 0.0000 89.9)",
+          "oklch(38% 0.0000 89.9)",
+          "oklch(50% 0.0000 89.9)",
+          "oklch(62% 0.0000 89.9)",
+          "oklch(74% 0.0000 89.9)",
+          "oklch(86% 0.0000 89.9)",
+          "oklch(95% 0.0000 89.9)"
         ]
       },
-      "dark-home-copy": {
+      "site-soft": {
         "role": "neutral",
-        "displayName": "Dark Home Copy",
+        "displayName": "Site Soft",
         "tonalRamp": [
-          "oklch(15% 0.0105 257.9)",
-          "oklch(26% 0.0227 257.9)",
-          "oklch(38% 0.0315 257.9)",
-          "oklch(50% 0.0350 257.9)",
-          "oklch(62% 0.0350 257.9)",
-          "oklch(74% 0.0297 257.9)",
-          "oklch(86% 0.0192 257.9)",
-          "oklch(95% 0.0063 257.9)"
+          "oklch(15% 0.0022 260.7)",
+          "oklch(26% 0.0048 260.7)",
+          "oklch(38% 0.0067 260.7)",
+          "oklch(50% 0.0074 260.7)",
+          "oklch(62% 0.0074 260.7)",
+          "oklch(74% 0.0063 260.7)",
+          "oklch(86% 0.0041 260.7)",
+          "oklch(95% 0.0013 260.7)"
         ]
       },
-      "dark-home-soft": {
+      "site-panel": {
         "role": "neutral",
-        "displayName": "Dark Home Soft",
+        "displayName": "Site Panel",
         "tonalRamp": [
-          "oklch(15% 0.0130 258.3)",
-          "oklch(26% 0.0282 258.3)",
-          "oklch(38% 0.0391 258.3)",
-          "oklch(50% 0.0434 258.3)",
-          "oklch(62% 0.0434 258.3)",
-          "oklch(74% 0.0369 258.3)",
-          "oklch(86% 0.0239 258.3)",
-          "oklch(95% 0.0078 258.3)"
+          "oklch(15% 0.0000 89.9)",
+          "oklch(26% 0.0000 89.9)",
+          "oklch(38% 0.0000 89.9)",
+          "oklch(50% 0.0000 89.9)",
+          "oklch(62% 0.0000 89.9)",
+          "oklch(74% 0.0000 89.9)",
+          "oklch(86% 0.0000 89.9)",
+          "oklch(95% 0.0000 89.9)"
+        ]
+      },
+      "site-ink": {
+        "role": "neutral",
+        "displayName": "Site Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0229 260.9)",
+          "oklch(26% 0.0496 260.9)",
+          "oklch(38% 0.0686 260.9)",
+          "oklch(50% 0.0763 260.9)",
+          "oklch(62% 0.0763 260.9)",
+          "oklch(74% 0.0648 260.9)",
+          "oklch(86% 0.0420 260.9)",
+          "oklch(95% 0.0137 260.9)"
+        ]
+      },
+      "site-muted": {
+        "role": "neutral",
+        "displayName": "Site Muted",
+        "tonalRamp": [
+          "oklch(15% 0.0136 257.9)",
+          "oklch(26% 0.0294 257.9)",
+          "oklch(38% 0.0407 257.9)",
+          "oklch(50% 0.0452 257.9)",
+          "oklch(62% 0.0452 257.9)",
+          "oklch(74% 0.0384 257.9)",
+          "oklch(86% 0.0249 257.9)",
+          "oklch(95% 0.0081 257.9)"
+        ]
+      },
+      "site-line": {
+        "role": "neutral",
+        "displayName": "Site Line",
+        "tonalRamp": [
+          "oklch(15% 0.0052 256.3)",
+          "oklch(26% 0.0112 256.3)",
+          "oklch(38% 0.0156 256.3)",
+          "oklch(50% 0.0173 256.3)",
+          "oklch(62% 0.0173 256.3)",
+          "oklch(74% 0.0147 256.3)",
+          "oklch(86% 0.0095 256.3)",
+          "oklch(95% 0.0031 256.3)"
+        ]
+      },
+      "site-link": {
+        "role": "neutral",
+        "displayName": "Site Link",
+        "tonalRamp": [
+          "oklch(15% 0.0412 262.6)",
+          "oklch(26% 0.0893 262.6)",
+          "oklch(38% 0.1236 262.6)",
+          "oklch(50% 0.1374 262.6)",
+          "oklch(62% 0.1374 262.6)",
+          "oklch(74% 0.1168 262.6)",
+          "oklch(86% 0.0756 262.6)",
+          "oklch(95% 0.0247 262.6)"
+        ]
+      },
+      "site-graphic": {
+        "role": "neutral",
+        "displayName": "Site Graphic",
+        "tonalRamp": [
+          "oklch(15% 0.0036 259.8)",
+          "oklch(26% 0.0078 259.8)",
+          "oklch(38% 0.0108 259.8)",
+          "oklch(50% 0.0120 259.8)",
+          "oklch(62% 0.0120 259.8)",
+          "oklch(74% 0.0102 259.8)",
+          "oklch(86% 0.0066 259.8)",
+          "oklch(95% 0.0022 259.8)"
+        ]
+      },
+      "site-graphic-line": {
+        "role": "neutral",
+        "displayName": "Site Graphic Line",
+        "tonalRamp": [
+          "oklch(15% 0.0303 259.6)",
+          "oklch(26% 0.0657 259.6)",
+          "oklch(38% 0.0909 259.6)",
+          "oklch(50% 0.1010 259.6)",
+          "oklch(62% 0.1010 259.6)",
+          "oklch(74% 0.0859 259.6)",
+          "oklch(86% 0.0556 259.6)",
+          "oklch(95% 0.0182 259.6)"
+        ]
+      },
+      "site-dark-bg": {
+        "role": "neutral",
+        "displayName": "Site Dark Bg",
+        "tonalRamp": [
+          "oklch(15% 0.0100 258.3)",
+          "oklch(26% 0.0216 258.3)",
+          "oklch(38% 0.0299 258.3)",
+          "oklch(50% 0.0332 258.3)",
+          "oklch(62% 0.0332 258.3)",
+          "oklch(74% 0.0282 258.3)",
+          "oklch(86% 0.0182 258.3)",
+          "oklch(95% 0.0060 258.3)"
+        ]
+      },
+      "site-dark-soft": {
+        "role": "neutral",
+        "displayName": "Site Dark Soft",
+        "tonalRamp": [
+          "oklch(15% 0.0121 257.8)",
+          "oklch(26% 0.0261 257.8)",
+          "oklch(38% 0.0362 257.8)",
+          "oklch(50% 0.0402 257.8)",
+          "oklch(62% 0.0402 257.8)",
+          "oklch(74% 0.0342 257.8)",
+          "oklch(86% 0.0221 257.8)",
+          "oklch(95% 0.0072 257.8)"
+        ]
+      },
+      "site-dark-panel": {
+        "role": "neutral",
+        "displayName": "Site Dark Panel",
+        "tonalRamp": [
+          "oklch(15% 0.0139 256.6)",
+          "oklch(26% 0.0300 256.6)",
+          "oklch(38% 0.0416 256.6)",
+          "oklch(50% 0.0462 256.6)",
+          "oklch(62% 0.0462 256.6)",
+          "oklch(74% 0.0393 256.6)",
+          "oklch(86% 0.0254 256.6)",
+          "oklch(95% 0.0083 256.6)"
+        ]
+      },
+      "site-dark-ink": {
+        "role": "neutral",
+        "displayName": "Site Dark Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0051 267.8)",
+          "oklch(26% 0.0110 267.8)",
+          "oklch(38% 0.0153 267.8)",
+          "oklch(50% 0.0169 267.8)",
+          "oklch(62% 0.0169 267.8)",
+          "oklch(74% 0.0144 267.8)",
+          "oklch(86% 0.0093 267.8)",
+          "oklch(95% 0.0031 267.8)"
+        ]
+      },
+      "site-dark-muted": {
+        "role": "neutral",
+        "displayName": "Site Dark Muted",
+        "tonalRamp": [
+          "oklch(15% 0.0101 256.8)",
+          "oklch(26% 0.0220 256.8)",
+          "oklch(38% 0.0304 256.8)",
+          "oklch(50% 0.0338 256.8)",
+          "oklch(62% 0.0338 256.8)",
+          "oklch(74% 0.0287 256.8)",
+          "oklch(86% 0.0186 256.8)",
+          "oklch(95% 0.0061 256.8)"
+        ]
+      },
+      "site-dark-line": {
+        "role": "neutral",
+        "displayName": "Site Dark Line",
+        "tonalRamp": [
+          "oklch(15% 0.0147 255.5)",
+          "oklch(26% 0.0319 255.5)",
+          "oklch(38% 0.0441 255.5)",
+          "oklch(50% 0.0491 255.5)",
+          "oklch(62% 0.0491 255.5)",
+          "oklch(74% 0.0417 255.5)",
+          "oklch(86% 0.0270 255.5)",
+          "oklch(95% 0.0088 255.5)"
+        ]
+      },
+      "site-dark-link": {
+        "role": "neutral",
+        "displayName": "Site Dark Link",
+        "tonalRamp": [
+          "oklch(15% 0.0197 267.9)",
+          "oklch(26% 0.0427 267.9)",
+          "oklch(38% 0.0591 267.9)",
+          "oklch(50% 0.0657 267.9)",
+          "oklch(62% 0.0657 267.9)",
+          "oklch(74% 0.0559 267.9)",
+          "oklch(86% 0.0361 267.9)",
+          "oklch(95% 0.0118 267.9)"
+        ]
+      },
+      "site-dark-graphic": {
+        "role": "neutral",
+        "displayName": "Site Dark Graphic",
+        "tonalRamp": [
+          "oklch(15% 0.0148 258.3)",
+          "oklch(26% 0.0320 258.3)",
+          "oklch(38% 0.0444 258.3)",
+          "oklch(50% 0.0493 258.3)",
+          "oklch(62% 0.0493 258.3)",
+          "oklch(74% 0.0419 258.3)",
+          "oklch(86% 0.0271 258.3)",
+          "oklch(95% 0.0089 258.3)"
+        ]
+      },
+      "site-dark-graphic-line": {
+        "role": "neutral",
+        "displayName": "Site Dark Graphic Line",
+        "tonalRamp": [
+          "oklch(15% 0.0191 256.7)",
+          "oklch(26% 0.0413 256.7)",
+          "oklch(38% 0.0573 256.7)",
+          "oklch(50% 0.0636 256.7)",
+          "oklch(62% 0.0636 256.7)",
+          "oklch(74% 0.0541 256.7)",
+          "oklch(86% 0.0350 256.7)",
+          "oklch(95% 0.0115 256.7)"
+        ]
+      },
+      "site-action-ink": {
+        "role": "neutral",
+        "displayName": "Site Action Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0329 265.7)",
+          "oklch(26% 0.0714 265.7)",
+          "oklch(38% 0.0988 265.7)",
+          "oklch(50% 0.1098 265.7)",
+          "oklch(62% 0.1098 265.7)",
+          "oklch(74% 0.0934 265.7)",
+          "oklch(86% 0.0604 265.7)",
+          "oklch(95% 0.0198 265.7)"
+        ]
+      },
+      "site-orange-hover": {
+        "role": "primary",
+        "displayName": "Site Orange Hover",
+        "tonalRamp": [
+          "oklch(15% 0.0395 60.2)",
+          "oklch(26% 0.0855 60.2)",
+          "oklch(38% 0.1184 60.2)",
+          "oklch(50% 0.1316 60.2)",
+          "oklch(62% 0.1316 60.2)",
+          "oklch(74% 0.1118 60.2)",
+          "oklch(86% 0.0724 60.2)",
+          "oklch(95% 0.0237 60.2)"
+        ]
+      },
+      "site-navy-hover": {
+        "role": "primary",
+        "displayName": "Site Navy Hover",
+        "tonalRamp": [
+          "oklch(15% 0.0378 265.1)",
+          "oklch(26% 0.0818 265.1)",
+          "oklch(38% 0.1133 265.1)",
+          "oklch(50% 0.1259 265.1)",
+          "oklch(62% 0.1259 265.1)",
+          "oklch(74% 0.1070 265.1)",
+          "oklch(86% 0.0692 265.1)",
+          "oklch(95% 0.0227 265.1)"
+        ]
+      },
+      "site-signin-hover": {
+        "role": "primary",
+        "displayName": "Site Signin Hover",
+        "tonalRamp": [
+          "oklch(15% 0.0425 266.1)",
+          "oklch(26% 0.0920 266.1)",
+          "oklch(38% 0.1274 266.1)",
+          "oklch(50% 0.1416 266.1)",
+          "oklch(62% 0.1416 266.1)",
+          "oklch(74% 0.1203 266.1)",
+          "oklch(86% 0.0779 266.1)",
+          "oklch(95% 0.0255 266.1)"
+        ]
+      },
+      "site-selection": {
+        "role": "neutral",
+        "displayName": "Site Selection",
+        "tonalRamp": [
+          "oklch(15% 0.0209 63.2)",
+          "oklch(26% 0.0452 63.2)",
+          "oklch(38% 0.0626 63.2)",
+          "oklch(50% 0.0695 63.2)",
+          "oklch(62% 0.0695 63.2)",
+          "oklch(74% 0.0591 63.2)",
+          "oklch(86% 0.0382 63.2)",
+          "oklch(95% 0.0125 63.2)"
+        ]
+      },
+      "site-photo-fallback": {
+        "role": "neutral",
+        "displayName": "Site Photo Fallback",
+        "tonalRamp": [
+          "oklch(15% 0.0304 265.1)",
+          "oklch(26% 0.0659 265.1)",
+          "oklch(38% 0.0913 265.1)",
+          "oklch(50% 0.1014 265.1)",
+          "oklch(62% 0.1014 265.1)",
+          "oklch(74% 0.0862 265.1)",
+          "oklch(86% 0.0558 265.1)",
+          "oklch(95% 0.0183 265.1)"
+        ]
+      },
+      "site-photo-copy": {
+        "role": "neutral",
+        "displayName": "Site Photo Copy",
+        "tonalRamp": [
+          "oklch(15% 0.0113 265.8)",
+          "oklch(26% 0.0245 265.8)",
+          "oklch(38% 0.0340 265.8)",
+          "oklch(50% 0.0378 265.8)",
+          "oklch(62% 0.0378 265.8)",
+          "oklch(74% 0.0321 265.8)",
+          "oklch(86% 0.0208 265.8)",
+          "oklch(95% 0.0068 265.8)"
+        ]
+      },
+      "site-diagram-accent": {
+        "role": "secondary",
+        "displayName": "Site Diagram Accent",
+        "tonalRamp": [
+          "oklch(15% 0.0501 52.3)",
+          "oklch(26% 0.1085 52.3)",
+          "oklch(38% 0.1502 52.3)",
+          "oklch(50% 0.1669 52.3)",
+          "oklch(62% 0.1669 52.3)",
+          "oklch(74% 0.1418 52.3)",
+          "oklch(86% 0.0918 52.3)",
+          "oklch(95% 0.0300 52.3)"
+        ]
+      },
+      "site-diagram-secondary": {
+        "role": "neutral",
+        "displayName": "Site Diagram Secondary",
+        "tonalRamp": [
+          "oklch(15% 0.0203 256.0)",
+          "oklch(26% 0.0440 256.0)",
+          "oklch(38% 0.0609 256.0)",
+          "oklch(50% 0.0676 256.0)",
+          "oklch(62% 0.0676 256.0)",
+          "oklch(74% 0.0575 256.0)",
+          "oklch(86% 0.0372 256.0)",
+          "oklch(95% 0.0122 256.0)"
+        ]
+      },
+      "site-diagram-ground": {
+        "role": "neutral",
+        "displayName": "Site Diagram Ground",
+        "tonalRamp": [
+          "oklch(15% 0.0108 255.3)",
+          "oklch(26% 0.0234 255.3)",
+          "oklch(38% 0.0325 255.3)",
+          "oklch(50% 0.0361 255.3)",
+          "oklch(62% 0.0361 255.3)",
+          "oklch(74% 0.0307 255.3)",
+          "oklch(86% 0.0198 255.3)",
+          "oklch(95% 0.0065 255.3)"
+        ]
+      },
+      "site-diagram-dashed": {
+        "role": "neutral",
+        "displayName": "Site Diagram Dashed",
+        "tonalRamp": [
+          "oklch(15% 0.0081 259.0)",
+          "oklch(26% 0.0176 259.0)",
+          "oklch(38% 0.0244 259.0)",
+          "oklch(50% 0.0271 259.0)",
+          "oklch(62% 0.0271 259.0)",
+          "oklch(74% 0.0230 259.0)",
+          "oklch(86% 0.0149 259.0)",
+          "oklch(95% 0.0049 259.0)"
+        ]
+      },
+      "site-diagram-axis": {
+        "role": "neutral",
+        "displayName": "Site Diagram Axis",
+        "tonalRamp": [
+          "oklch(15% 0.0131 257.5)",
+          "oklch(26% 0.0283 257.5)",
+          "oklch(38% 0.0392 257.5)",
+          "oklch(50% 0.0435 257.5)",
+          "oklch(62% 0.0435 257.5)",
+          "oklch(74% 0.0370 257.5)",
+          "oklch(86% 0.0239 257.5)",
+          "oklch(95% 0.0078 257.5)"
+        ]
+      },
+      "site-diagram-return": {
+        "role": "neutral",
+        "displayName": "Site Diagram Return",
+        "tonalRamp": [
+          "oklch(15% 0.0173 167.0)",
+          "oklch(26% 0.0374 167.0)",
+          "oklch(38% 0.0518 167.0)",
+          "oklch(50% 0.0576 167.0)",
+          "oklch(62% 0.0576 167.0)",
+          "oklch(74% 0.0490 167.0)",
+          "oklch(86% 0.0317 167.0)",
+          "oklch(95% 0.0104 167.0)"
+        ]
+      },
+      "site-check": {
+        "role": "neutral",
+        "displayName": "Site Check",
+        "tonalRamp": [
+          "oklch(15% 0.0430 51.0)",
+          "oklch(26% 0.0931 51.0)",
+          "oklch(38% 0.1289 51.0)",
+          "oklch(50% 0.1433 51.0)",
+          "oklch(62% 0.1433 51.0)",
+          "oklch(74% 0.1218 51.0)",
+          "oklch(86% 0.0788 51.0)",
+          "oklch(95% 0.0258 51.0)"
+        ]
+      },
+      "site-check-dark": {
+        "role": "neutral",
+        "displayName": "Site Check Dark",
+        "tonalRamp": [
+          "oklch(15% 0.0354 58.1)",
+          "oklch(26% 0.0767 58.1)",
+          "oklch(38% 0.1062 58.1)",
+          "oklch(50% 0.1180 58.1)",
+          "oklch(62% 0.1180 58.1)",
+          "oklch(74% 0.1003 58.1)",
+          "oklch(86% 0.0649 58.1)",
+          "oklch(95% 0.0212 58.1)"
+        ]
+      },
+      "site-on-navy-icon": {
+        "role": "neutral",
+        "displayName": "Site On Navy Icon",
+        "tonalRamp": [
+          "oklch(15% 0.0391 61.3)",
+          "oklch(26% 0.0848 61.3)",
+          "oklch(38% 0.1174 61.3)",
+          "oklch(50% 0.1304 61.3)",
+          "oklch(62% 0.1304 61.3)",
+          "oklch(74% 0.1108 61.3)",
+          "oklch(86% 0.0717 61.3)",
+          "oklch(95% 0.0235 61.3)"
         ]
       }
     },
     "typographyMeta": {
       "display": {
         "displayName": "Public Display",
-        "purpose": "Public hero and headings; Manrope bold."
+        "purpose": "Photographic public hero; one responsive Manrope bold display role."
       },
       "headline": {
         "displayName": "Operating Headline",
@@ -413,6 +819,66 @@
       "auth-input-mobile": {
         "displayName": "Mobile Authentication",
         "purpose": "At least 16px at widths up to 760px."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Established private workspace/authentication role."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Established private workspace/authentication role."
+      },
+      "auth-input": {
+        "displayName": "Auth Input",
+        "purpose": "Established private workspace/authentication role."
+      },
+      "display-mobile": {
+        "displayName": "Display Mobile",
+        "purpose": "Public display mobile role."
+      },
+      "page-headline": {
+        "displayName": "Page Headline",
+        "purpose": "Public page headline role."
+      },
+      "page-headline-mobile": {
+        "displayName": "Page Headline Mobile",
+        "purpose": "Public page headline mobile role."
+      },
+      "service-headline": {
+        "displayName": "Service Headline",
+        "purpose": "Public service headline role."
+      },
+      "section-headline": {
+        "displayName": "Section Headline",
+        "purpose": "Public section headline role."
+      },
+      "site-body": {
+        "displayName": "Site Body",
+        "purpose": "Public body role."
+      },
+      "site-support": {
+        "displayName": "Site Support",
+        "purpose": "Public support role."
+      },
+      "site-action": {
+        "displayName": "Site Action",
+        "purpose": "Public action role."
+      },
+      "site-service-title": {
+        "displayName": "Site Service Title",
+        "purpose": "Public service title role."
+      },
+      "site-label": {
+        "displayName": "Site Label",
+        "purpose": "Public label role."
+      },
+      "site-caption": {
+        "displayName": "Site Caption",
+        "purpose": "Public caption role."
+      },
+      "site-metadata": {
+        "displayName": "Site Metadata",
+        "purpose": "Public metadata role."
       }
     },
     "shadows": [
@@ -422,19 +888,19 @@
         "purpose": "Flat operating sheets."
       },
       {
-        "name": "public-preview",
-        "value": "0 24px 64px #020f413d",
-        "purpose": "Embedded workspace on the navy corridor."
-      },
-      {
-        "name": "mobile-menu",
-        "value": "0 14px 35px #081d4220",
-        "purpose": "Public mobile navigation."
-      },
-      {
         "name": "active-navigation",
         "value": "inset 0 0 0 1px #4961a3",
         "purpose": "Selected navy rail item."
+      },
+      {
+        "name": "public-workspace-illustration",
+        "value": "0 16px 35px #071c4814",
+        "purpose": "Later static homepage workspace capture only."
+      },
+      {
+        "name": "public-mobile-menu",
+        "value": "0 18px 34px #03133422",
+        "purpose": "Public mobile navigation disclosure."
       }
     ],
     "motion": [
@@ -444,14 +910,19 @@
         "purpose": "Inherited operational control transitions."
       },
       {
-        "name": "atlas-route",
-        "value": "atlas-connect 2.4s cubic-bezier(.16,1,.3,1) both",
-        "purpose": "Public corridor draw when motion is enabled."
-      },
-      {
         "name": "reduced-motion",
         "value": "prefers-reduced-motion: reduce",
         "purpose": "Disable animation/transition and use automatic scrolling."
+      },
+      {
+        "name": "public-control-transition",
+        "value": "background-color .16s, color .16s, transform .16s",
+        "purpose": "Public button feedback."
+      },
+      {
+        "name": "public-photo-arrival",
+        "value": "pt-site-landscape-arrive 1800ms cubic-bezier(.16,1,.3,1) both; scale(1.045) to scale(1)",
+        "purpose": "Single bounded hero photograph arrival; disabled with reduced motion."
       }
     ],
     "breakpoints": [
@@ -460,16 +931,8 @@
         "value": "440px"
       },
       {
-        "name": "public-phone",
-        "value": "600px"
-      },
-      {
         "name": "workspace-mobile",
         "value": "760px"
-      },
-      {
-        "name": "public-navigation",
-        "value": "900px"
       },
       {
         "name": "project-guide-stack",
@@ -480,16 +943,32 @@
         "value": "1200px"
       },
       {
-        "name": "preview-coverage",
-        "value": "1250px"
-      },
-      {
         "name": "wide-workspace",
         "value": "1600px"
       },
       {
-        "name": "wide-preview",
+        "name": "public-catalog-single",
+        "value": "600px"
+      },
+      {
+        "name": "public-mobile",
+        "value": "760px"
+      },
+      {
+        "name": "public-navigation-and-catalog",
+        "value": "1000px"
+      },
+      {
+        "name": "public-gutter-reduction",
+        "value": "1200px"
+      },
+      {
+        "name": "public-wide",
         "value": "1700px"
+      },
+      {
+        "name": "public-narrow-phone",
+        "value": "360px"
       }
     ]
   },
@@ -509,14 +988,6 @@
       "description": "Supporting actions such as export and refresh.",
       "html": "<button class=\"ds-secondary\">Export summary</button>",
       "css": ".ds-primary,.ds-secondary,.ds-home{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 14px;border-radius:8px;font:600 12px Inter,system-ui,sans-serif;min-height:42px;cursor:pointer;transition:background-color .16s,border-color .16s,box-shadow .16s,transform .16s}.ds-primary:focus-visible,.ds-secondary:focus-visible,.ds-home:focus-visible{outline:3px solid var(--brand-orange,#ff8d2a);outline-offset:3px}.ds-secondary{background:var(--workspace-panel,#fff);color:var(--workspace-text,#19273d);border:1px solid var(--workspace-line,#dce4ef)}.ds-secondary:hover{background:var(--workspace-soft,#edf2f8)}.ds-secondary:disabled{opacity:.55;cursor:not-allowed}"
-    },
-    {
-      "name": "Public Primary Action",
-      "kind": "button",
-      "refersTo": "button-home",
-      "description": "Public action in the introductory action group.",
-      "html": "<a class=\"ds-home\" href=\"#workspace\">Explore the workspace</a>",
-      "css": ".ds-primary,.ds-secondary,.ds-home{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 14px;border-radius:8px;font:600 12px Inter,system-ui,sans-serif;min-height:42px;cursor:pointer;transition:background-color .16s,border-color .16s,box-shadow .16s,transform .16s}.ds-primary:focus-visible,.ds-secondary:focus-visible,.ds-home:focus-visible{outline:3px solid var(--brand-orange,#ff8d2a);outline-offset:3px}.ds-home{background:#0c2170;color:#fff;border:0;padding:12px 19px;min-height:46px;font-size:13px;gap:15px;text-decoration:none}.ds-home:hover{background:#29468f}"
     },
     {
       "name": "Authentication Field",
@@ -557,34 +1028,78 @@
       "description": "Distinct navy destination for available project files.",
       "html": "<aside class=\"ds-delivery\"><h2>Project deliverables.</h2><p>Available files, measured records and reports, organised in one place.</p><a href=\"/portal\">Browse project files</a></aside>",
       "css": ".ds-delivery{background:#0c2170;color:#fff;border-radius:14px;padding:24px;max-width:285px;font:14px/1.55 Inter,system-ui,sans-serif}.ds-delivery h2{font-size:25px;font-weight:600;letter-spacing:-.025em;margin:0}.ds-delivery p{color:#cad6f1;font-size:13px;line-height:1.7;margin:12px 0 22px}.ds-delivery a{display:flex;justify-content:space-between;gap:12px;background:#fff;color:#0c2170;padding:12px 14px;border-radius:8px;font-size:12px;font-weight:650;text-decoration:none}.ds-delivery a:hover{background:#ffe6cf}.ds-delivery a:focus-visible{outline:3px solid var(--brand-orange,#ff8d2a);outline-offset:3px}"
+    },
+    {
+      "name": "Public Project Enquiry",
+      "kind": "button",
+      "refersTo": "button-home",
+      "description": "Public orange action with native route navigation or local form behavior.",
+      "html": "<a class=\"ds-site-button ds-site-orange\" href=\"/contact\">Discuss a project</a>",
+      "css": ".ds-site-button{display:inline-flex;align-items:center;justify-content:center;gap:14px;min-height:48px;padding:12px 20px;border-radius:8px;border:1px solid transparent;font:600 13px/1.6 Inter,system-ui,sans-serif;letter-spacing:-.01em;text-align:center;text-decoration:none;cursor:pointer;transition:background-color .16s,color .16s,transform .16s}.ds-site-button:focus-visible{outline:3px solid var(--pt-site-orange,#ff8d2a);outline-offset:4px}.ds-site-button:disabled{cursor:not-allowed}.ds-site-orange{background:#ff8d2a;color:#102460}.ds-site-orange:hover{background:#ffac64}"
+    },
+    {
+      "name": "Public Navy Action",
+      "kind": "button",
+      "refersTo": "button-site-navy",
+      "description": "Public navy action with native route navigation or local form behavior.",
+      "html": "<button class=\"ds-site-button ds-site-navy\">Prepare enquiry</button>",
+      "css": ".ds-site-button{display:inline-flex;align-items:center;justify-content:center;gap:14px;min-height:48px;padding:12px 20px;border-radius:8px;border:1px solid transparent;font:600 13px/1.6 Inter,system-ui,sans-serif;letter-spacing:-.01em;text-align:center;text-decoration:none;cursor:pointer;transition:background-color .16s,color .16s,transform .16s}.ds-site-button:focus-visible{outline:3px solid var(--pt-site-orange,#ff8d2a);outline-offset:4px}.ds-site-button:disabled{cursor:not-allowed}.ds-site-navy{background:#0c2170;color:#fff}.ds-site-navy:hover{background:#29468f}"
+    },
+    {
+      "name": "Public Secondary Action",
+      "kind": "button",
+      "refersTo": "button-site-secondary",
+      "description": "Public secondary action with native route navigation or local form behavior.",
+      "html": "<a class=\"ds-site-button ds-site-secondary\" href=\"/services\">Explore services</a>",
+      "css": ".ds-site-button{display:inline-flex;align-items:center;justify-content:center;gap:14px;min-height:48px;padding:12px 20px;border-radius:8px;border:1px solid transparent;font:600 13px/1.6 Inter,system-ui,sans-serif;letter-spacing:-.01em;text-align:center;text-decoration:none;cursor:pointer;transition:background-color .16s,color .16s,transform .16s}.ds-site-button:focus-visible{outline:3px solid var(--pt-site-orange,#ff8d2a);outline-offset:4px}.ds-site-button:disabled{cursor:not-allowed}.ds-site-secondary{background:var(--pt-site-bg,#fff);color:var(--pt-site-ink,#162c53);border-color:var(--pt-site-line,#dce4ef)}.ds-site-secondary:hover{background:var(--pt-site-soft,#f2f5fa)}"
+    },
+    {
+      "name": "Public Navigation",
+      "kind": "nav",
+      "refersTo": "site-navigation",
+      "description": "Native public page links with orange current-page underline.",
+      "html": "<nav class=\"ds-site-nav\" aria-label=\"Main navigation\"><a href=\"/services\" aria-current=\"page\">Services</a><a href=\"/about\">About Powertek</a><a href=\"/contact\">Contact</a></nav>",
+      "css": ".ds-site-nav{display:flex;gap:32px;background:var(--pt-site-bg,#fff);padding:16px}.ds-site-nav a{font:550 13px/1.7 Inter,system-ui,sans-serif;color:var(--pt-site-muted,#53647d);padding:12px 0;min-height:44px;text-decoration:none}.ds-site-nav a:hover,.ds-site-nav a[aria-current]{color:var(--pt-site-link,#153a88)}.ds-site-nav a[aria-current]{text-decoration:underline;text-decoration-color:#ff8d2a;text-underline-offset:10px;text-decoration-thickness:2px}.ds-site-nav a:focus-visible{outline:3px solid #ff8d2a;outline-offset:4px}"
+    },
+    {
+      "name": "Public Service Card",
+      "kind": "card",
+      "refersTo": "site-service-card",
+      "description": "Flat conceptual service panel with a native detail-page link.",
+      "html": "<a class=\"ds-site-card\" href=\"/services/transmission-line-modelling\"><svg viewBox=\"0 0 300 120\" fill=\"none\" aria-hidden=\"true\"><path d=\"M20 100h260\" stroke=\"#8a9aaf\"/><path d=\"m115 100 35-80 35 80m-60-30h50m-60-20h70\" stroke=\"currentColor\" stroke-width=\"2.5\"/><path d=\"M10 35q70 40 140 0 70 40 140 0\" stroke=\"#e9781e\" stroke-width=\"3\"/></svg><div><h2>Transmission line modelling</h2><p>Connect line geometry, terrain and engineering context.</p><span>Explore service</span></div></a>",
+      "css": ".ds-site-card{display:flex;flex-direction:column;max-width:380px;overflow:hidden;border:1px solid var(--pt-site-line,#dce4ef);border-radius:12px;background:var(--pt-site-panel,#fff);color:var(--pt-site-ink,#162c53);font:13px/1.9 Inter,system-ui,sans-serif;text-decoration:none}.ds-site-card svg{display:block;width:100%;background:var(--pt-site-graphic,#eef3fb);color:var(--pt-site-graphic-line,#25477e);padding:18px}.ds-site-card>div{padding:25px}.ds-site-card h2{font:650 21px/1.4 Inter,system-ui,sans-serif;letter-spacing:-.025em;margin:0}.ds-site-card p{color:var(--pt-site-muted,#53647d);margin:12px 0 25px}.ds-site-card span{color:var(--pt-site-link,#153a88);font-size:12px;font-weight:600}.ds-site-card:hover h2{color:var(--pt-site-link,#153a88)}.ds-site-card:focus-visible{outline:3px solid #ff8d2a;outline-offset:4px}"
     }
   ],
   "narrative": {
     "northStar": "Connected Atlas",
-    "overview": "Navy corridor fields connect white inspection sheets, fine route geometry and orange selections. The system makes relationships between projects, locations, imagery, measured profiles and deliverables visible. Public pages use geometric display type; private workspaces keep conventional forms, tabs, lists and file tables.\n\nOperational surfaces are restrained and readable, with role-specific next actions and explicit availability. Preserve the official Powertek identity and its logo proportions. This records the shipped code: `app/home.css` and then `app/experience.css` take precedence over earlier styles imported by `app/layout.tsx`.",
+    "overview": "Powertek’s engineering world connects contextual infrastructure photography, precise conceptual diagrams, divided service indexes and white or slate inspection sheets. Public pages introduce engineering and inspection expertise with Manrope headings, legible navy-backed photographic fields and clear project enquiries. Private workspaces keep conventional forms, tabs, lists and file tables that connect locations, imagery, measured profiles and deliverables.\n\nOperational surfaces are restrained and readable, with role-specific next actions and explicit availability. Preserve the official Powertek identity and its logo proportions. This records the shipped code: `app/home.css` defines the public website and `app/experience.css` retains the private workspace/authentication system, after earlier styles imported by `app/layout.tsx`. The approved public redesign changes presentation, not the established private controls, permissions or authentication rules.",
     "keyCharacteristics": [
-      "Continuous navy fields with fine corridor geometry.",
+      "Contextual infrastructure photography and conceptual engineering geometry.",
       "White or slate sheets with restrained rounded controls.",
       "Orange selection and focus; labelled semantic availability.",
-      "Public dashboard imagery captured from the actual client workspace."
+      "Engineering services lead public pages; a smaller static client-workspace image appears later on the homepage."
     ],
     "rules": [
       {
         "name": "The Color Ownership Rule",
-        "body": "Use navy for structure, orange for selection and focus, and semantic status colours with explicit text.",
+        "body": "Use navy for structure, orange for public project enquiries, selection and focus, and semantic status colours with explicit text.",
         "section": "colors"
       }
     ],
     "dos": [
       "**Do** preserve the official logo, navy/orange identity and theme-specific reading surfaces.",
+      "**Do** lead public pages with engineering expertise, real contextual imagery and useful service links; keep the static client-workspace illustration later on the homepage.",
       "**Do** capture the real client overview for public graphics and keep operating controls behind sign-in.",
+      "**Do** retain visible photo credits and provenance, and identify conceptual diagrams as illustrations.",
+      "**Do** describe contact preparation as a draft; let the visitor review, copy, edit and send from their email app.",
       "**Do** keep route navigation native, mobile authentication input text at least 16px and keyboard focus visible.",
       "**Do** pair availability and review states with labels and permitted next actions."
     ],
     "donts": [
       "**Don't** add a visible sample-data label to the public dashboard imagery or connect it to private records.",
       "**Don't** reveal paused client data, invent missing survey imagery or add unsupported company claims.",
-      "**Don't** turn inherited decorative kickers, glyph icons or legacy display styling into reusable system rules."
+      "**Don't** turn inherited decorative kickers, glyph icons or legacy display styling into reusable system rules.",
+      "**Don't** restore the rejected oversized dashboard hero or obsolete pointer/atlas animation."
     ]
   }
 }

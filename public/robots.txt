@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /portal
+Disallow: /projects/
+Disallow: /api/
+Disallow: /invite
+Disallow: /reset-password
+
+Sitemap: https://powertek-app.vercel.app/sitemap.xml
